@@ -1,0 +1,596 @@
+﻿@model PSCS.ModelsScreen.ReceivedPlanDetailScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC2111_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_thai_min.js"></script>
+    <script src="~/Scripts/SessionTimeout.js"></script>
+
+    <script language="javascript" type="text/javascript">
+        var LangTh = false;
+        var strStatus = "";
+
+        $(document).ready(function () {
+             if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true
+            }
+            else {
+                LangTh = false
+            }
+
+            if ("@Model.IsYardSupervisorRole" == "True")
+            {
+                $('#btnApprove').attr('style', 'display:none');
+                //if (row > 0) {
+                //    $('#btnSave').removeAttr('disabled', 'none');
+                //} else {
+                //    $('#btnSave').attr('disabled', 'none');
+                //}
+            }
+            if ("@Model.IsControllerRole" == "True")
+            {
+                $('#btnSave').attr('style', 'display:none');
+                //if (row > 0) {
+                //    $('#btnApprove').removeAttr('disabled', 'none');
+                //} else {
+                //    $('#btnApprove').attr('disabled', 'none');
+                //}
+            }
+
+            $(".datepicker").datepicker_thai({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                langTh: LangTh,
+                yearTh: LangTh,
+            });
+
+            $('#edit-user, #cancel-user').on('click', function () {
+                var tr = $(this).parents('tr:first');
+                tr.find('.edit-mode, .display-mode').toggle();
+            });
+
+            $('#save-user').on('click', function () {
+                var tr = $(this).parents('tr:first');
+
+                var remark = tr.find("#remarkTxt").val();
+                console.log(remark);
+                tr.find("#remarklbl").text(remark);
+
+                tr.find('.edit-mode, .display-mode').toggle();
+            });
+
+
+            //function RefreshPartial() {
+            //    //this will wait 3 seconds and then fire the load partial function
+            //    setTimeout(function () {
+            //        loadPartialView();
+            //        //recall this function so that it will continue to loop
+            //        RefreshPartial();
+            //    }, 3000);
+            //}
+            ////initialize the loop
+            //RefreshPartial();
+        
+        });
+
+        //function loadPartialView() {
+        //    var rows = $("#grd tbody").children();
+        //    console.log(rows);
+
+        //    for (var i = 0, rowLen = $("#grd tbody").children().length; i < rowLen; i++) {
+        //        var strIndex = i;
+        //        var strReceiveID = $(rows[i]).closest('tr').find('#hdnRecevedID').val();
+        //        var strItemCode = $(rows[i]).closest('tr').find('#hdnItemCode').val();
+        //        var strHeatNo = $(rows[i]).closest('tr').find('#hdnHeatNo').val();
+
+        //        loadPartialData(strIndex, strReceiveID, strItemCode, strHeatNo);
+        //    }
+        //}
+
+        @*function loadPartialData(pIndex, pReceiveID, pItemCode, pHeatNo) {
+            $.ajax({
+                url: '@Url.Action("GetActualQty", "ReceivePlan")',
+                type: 'post',
+                cache: false,
+                async: true,
+                data: {
+                    pReceiveID: pReceiveID,
+                    pItemCode: pItemCode,
+                    pHeatNo: pHeatNo,
+                },
+                success: function (response) {
+
+                    var rows = $("#grd tbody").children();
+                    $(rows[pIndex]).closest('tr').find('td:nth-child(9)').text(response.ActualQty.toFixed(2));    //act qty
+                    //$(rows[pIndex]).closest('tr').find('#ddlStatus').val(response.Status);           //Status
+                    $(rows[pIndex]).closest('tr').find('td:nth-child(10)').text(response.StatusText);
+                    $(rows[pIndex]).closest('tr').find('td:nth-child(11)').text(response.LocationText);
+
+
+                    var eddlStartHours = document.getElementById("ddlStartHours");
+                    var eddlStartMinute = document.getElementById("ddlStartMinute");
+
+                    if (eddlStartHours != null) {
+                        eddlStartHours.value = response.StartHour;
+                    }
+                    if (eddlStartMinute != null) {
+                        eddlStartMinute.value = response.StartMinute;
+                    }
+
+                    var etxtStartHoursAndMinute = document.getElementById("txtStartHoursAndMinute");
+                    if (etxtStartHoursAndMinute != null) {
+                        etxtStartHoursAndMinute = response.StartHourAndMinute;
+                    }
+                },
+                error: function (reponse) {
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }*@
+
+        // Row selected
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            var pReceiveId = $(e.target).closest('tr').find('td:nth-child(2)').text();
+            var pTranNo = $(e.target).closest('tr').find('td:nth-child(3)').text();
+
+            $.ajax({
+                type: "Get",
+                url: '@Url.Action("GetReceivedPlanDetail", "ReceivedPlan")',
+                data: {
+                    id: pReceiveId,
+                    tranNo: pTranNo
+                },
+                success: function (data) {
+                    $('body').addClass('noscroll');
+                    $('#Preview').html(data);
+                    $('#myModal').modal('show');
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            })
+        });
+
+        $('.mvc-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+        $('.mvc-grid td').click(function (e) {
+            var col = this.cellIndex;
+            if (col == 9 || col == 10 || col == 11) {
+                e.stopPropagation();
+            }
+        });
+
+        $('#btnConfirm').on('click', function () {
+            $(this).submit();
+        });
+
+        $('#btnSave1').click(function () {
+            var TruckID = $('#txtTruckID').val();
+            var ReceiveDate = $('#txtReceiveDate').val();
+            var Remark = $('#txtRemark').val();
+            if (TruckID == '') {
+                console.log("not pass")
+                $('#TruckAllow ').prop('checked', false);
+            }
+            else {
+                console.log("pass")
+                $('#TruckAllow ').prop('checked', true);
+            }
+
+            if (ReceiveDate == '') {
+                $('#ReceiveDateAllow ').prop('checked', false);
+            }
+            else {
+                console.log("pass")
+                $('#ReceiveDateAllow ').prop('checked', true);
+            }
+
+            if (Remark == '') {
+                $('#RemarkAllow ').prop('checked', false);
+            }
+            else {
+                console.log("pass")
+                $('#RemarkAllow ').prop('checked', true);
+
+            }
+
+            $("#itemModal").modal("show");
+            $('#btnConfirm').show();
+            $('#btnApproveM').hide();
+            return false;
+        });
+
+        $('#btnApprove').click(function () {
+            var TruckID = $('#txtTruckID').val();
+            var ReceiveDate = $('#txtReceiveDate').val();
+            var Remark = $('#txtRemark').val();
+            if (TruckID == '') {
+                console.log("not pass")
+                $('#TruckAllow ').prop('checked', false);
+            }
+            else {
+                console.log("pass")
+                $('#TruckAllow ').prop('checked', true);
+            }
+
+            if (ReceiveDate == '') {
+                $('#ReceiveDateAllow ').prop('checked', false);
+            }
+            else {
+                console.log("pass")
+                $('#ReceiveDateAllow ').prop('checked', true);
+            }
+
+            if (Remark == '') {
+                $('#RemarkAllow ').prop('checked', false);
+            }
+            else
+             {
+                console.log("pass")
+                $('#RemarkAllow ').prop('checked', true);
+            }
+
+            $("#itemModal").modal("show");
+            $('#btnConfirm').hide();
+            $('#btnApproveM').show();
+            return false;
+        });
+
+        $('#btnApproveM').on('click', function () {
+            $(this).submit();
+        });
+
+        $('#btnBack').click(function () {
+            //window.location.href = '@Url.Action("PSC2110", "ReceivedPlan", new { @id = 1 })';
+            window.location.href = '@Url.Action("PSC2110", "ReceivedPlan")' + "?isback=true";
+            //history.go(-1);
+        });
+
+        // Parent view: Dropdown list change
+        $(document).on("change", "#ddlStatus", function (e) {
+            var Status = $('#ddlStatus').val();
+            var pRowNo =   $(e.target).closest('tr').find('td:nth-child(1)').text().trim();
+
+            if (strStatus == "") {
+                strStatus = String(pRowNo);
+            }
+            else {
+                strStatus = strStatus + "," + String(pRowNo);
+            }
+        });
+
+    </script>
+}
+
+<style>
+    .divgrid-rowno {
+        width: 50px;
+        text-align: center;
+    }
+
+    .divgrid-status {
+        text-align: center;
+    }
+
+    .divgrid-date {
+        text-wrap: none;
+    }
+
+    .divgrid-numeric {
+        text-align: right;
+    }
+
+    .edit {
+        width: 160px;
+    }
+</style>
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC2111_cshtml.Title</h1>
+
+@using (Html.BeginForm("PSC2111", "ReceivedPlan", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <th>
+                <!-- Button area -->
+                <table align="right">
+                    <tr>
+                        <th>
+                            <Button id="btnSave1" name="submitButton" value="Save" class="btn btn-large btn-green">@PSCS.Resources.PSC2111_cshtml.Button_Update</Button>
+                            <Button class="hidden" id="btnSave" name="submitButton" value="Approve" class="btn btn-large btn-green" disabled>@PSCS.Resources.PSC2111_cshtml.Button_Save</Button>
+                            <Button class="hidden" ="btnApprove" name="submitButton" value="Approve" class="btn btn-large btn-red" disabled>@PSCS.Resources.PSC2111_cshtml.Button_Approve</Button>
+                            <Button id="btnBack" name="submitButton" onclick="window.history.go(-1); return false;" value=Back class="btn btn-large btn-secondary">@PSCS.Resources.PSC2111_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+
+        <tr>
+            <th>
+                <!-- Criteria area -->
+                <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="100px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2111_cshtml.Filter_DeliveryDate</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.DeliveryDate, new { htmlAttributes = new { @readonly = "readonly", @disabled = "disabled", @style = "height:25px;" } })
+                                    </th>
+                                    <th width="100px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2111_cshtml.Filter_ContainerNo</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.ContainerNo, new { htmlAttributes = new { @readonly = "readonly", @disabled = "disabled", @style = "height:25px;" } })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2111_cshtml.Filter_ReceiveDate</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.ReceiveDate, new { htmlAttributes = new { @id = "txtReceiveDate", @class = "datepicker row", @readonly = "readonly", @style = "width:140px;" } })
+                                        @Html.CheckBoxFor(model => model.EditReceiveDateAllow, new { id = "ReceiveDateAllow", Style = "display:none;" })
+                                        @Html.ValidationMessageFor(model => model.EditReceiveDateAllow, "", new { @class = "text-danger" })
+                                    </th>
+
+                                    <th width="100px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2111_cshtml.Filter_TruckNo</label>
+                                    </th>
+                                    <th width="250px">
+                                        @Html.EditorFor(m => m.TruckNo, new { htmlAttributes = new { @id = "txtTruckID", @style = "height:25px;width:100px;" } })
+                                        @*@Html.CheckBoxFor(model => model.EditTruckNoAllow, new { id = "TruckAllow", Style = "display:none;" })*@
+                                        @*@Html.ValidationMessageFor(model => model.EditTruckNoAllow, "", new { @class = "text-danger" })*@
+                                    </th>
+                                    <th width="100x">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2111_cshtml.Filter_TimeStart</label>
+                                    </th>
+                                    <th width="10px" hidden>
+                                        @Html.DropDownListFor(m => m.StartHours, Model.HoursList, new { @id = "ddlStartHours", @style = "height:25px; width:40px;", @disabled = "disabled" })
+                                        <label class="textbox-caption">:</label>
+                                        @Html.DropDownListFor(m => m.StartMinute, Model.MinuteList, new { @id = "ddlStartMinute", @style = "height:25px; width:40px;", @disabled = "disabled" })
+                                    </th>
+                                    <th width="100px">
+                                        @Html.EditorFor(m => m.startHourAndMinute, new { htmlAttributes = new { @id = "txtStartHoursAndMinute", @readonly = "readonly", @disabled = "disabled", @style = "height:25px; width:50px;" } })
+                                    </th>
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2111_cshtml.Filter_TimeFinish</label>
+                                    </th>
+                                    <th width="10px" hidden>
+                                        @Html.DropDownListFor(m => m.FinishHours, Model.HoursList, new { @style = "height:25px; width:40px;", @disabled = "disabled" })
+                                        <label class="textbox-caption">:</label>
+                                        @Html.DropDownListFor(m => m.FinishMinute, Model.MinuteList, new { @style = "height:25px; width:40px;", @disabled = "disabled" })
+                                    </th>
+                                    <th width="100px">
+                                        @Html.EditorFor(m => m.FinishHourAndMinute, new { htmlAttributes = new { @id = "txtFinishHoursAndMinute", @readonly = "readonly", @disabled = "disabled", @style = "height:25px; width:50px;" } })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="center">
+                    <tr>
+                        <th>
+                            <img src="@Url.Action("RenderBarcode", "ReceivePlan",new {containerNo = Model.ContainerNo})" style="float: right; " />
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <!-- Body : Detail -->
+        <tr>
+            <th>
+                <div>
+                    <table id="grd" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_RowNo</th>
+                                <th class="hide">ReceiveId</th>
+                                <th class="hide">TranNo</th>
+                                <th class="hide">@PSCS.Resources.PSC2111_cshtml.Grid_ItemCode</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_HeatNo</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_Description</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_OD</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_WT</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_LT</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_PlanQty</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_PlanBundles</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_ActualQty</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_Status</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_Location</th>
+                                <th style="text-align:center;vertical-align:middle">@PSCS.Resources.PSC2111_cshtml.Grid_Remark</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grid_body">
+                            @for (int i = 0; i < Model.ReceivingInstructionDetailList.Count; i++)
+                            {
+                                <tr>
+                                    <td style="text-align:center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].RowNo)
+                                        @Html.HiddenFor(x => Model.ReceivingInstructionDetailList[i].RecevedID, new { @id = "hdnRecevedID" })
+                                        @Html.HiddenFor(x => Model.ReceivingInstructionDetailList[i].ItemCode, new { @id = "hdnItemCode" })
+                                        @Html.HiddenFor(x => Model.ReceivingInstructionDetailList[i].HeatNo, new { @id = "hdnHeatNo" })
+                                    </td>
+                                    <td style="text-align:center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].HeatNo)
+                                    </td>
+                                    <td style="text-align:center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].Description)
+                                    </td>
+                                    <td style="text-align:right">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].OD)
+                                    </td>
+                                    <td style="text-align:right">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].WT)
+                                    </td>
+                                    <td style="text-align:right">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].LT)
+                                    </td>
+                                    <td style="text-align:right">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].Qty)
+                                    </td>
+                                    <td style="text-align:right">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].Bundles)
+                                    </td>
+                                    <td style="text-align:right">
+                                        @*<div class="divPartial">@Html.DisplayFor(m => item.ActualQty)</div>*@
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].ActualQty)
+                                    </td>
+                                    <td class="editable-cell">
+                                        @*@Html.DropDownListFor(x => Model.ReceivingInstructionDetailList[i].Status, Model.StatusList, new { @id = "ddlStatus", @class = "form-control edit edit-mode" })*@
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].StatusText)
+                                        @*@Html.DropDownListFor(x => Model.ReceivingInstructionDetailList[i].Status, new SelectList(Model.StatusList, "Value", "Text", Model.ReceivingInstructionDetailList[i].Status), new { @id = "ddlStatus", @class = "form-control edit edit-mode" })*@
+                                    </td>
+                                    <td style="text-align:right">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].LocationText)
+                                    </td>
+                                    <td class="editable-cell">
+                                        @Html.EditorFor(x => Model.ReceivingInstructionDetailList[i].Remark, new { @class = "form-control edit edit-mode", htmlAttributes = new { @id = "txtRemark", @style = "height:32px; width:300px;" }, autocomplete = "off" })
+                                        @Html.CheckBoxFor(model => model.EditRemarkAllow, new { id = "RemarkAllow", Style = "display:none;" })
+                                        @Html.ValidationMessageFor(model => model.EditRemarkAllow, "", new { @class = "text-danger" })
+
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </th>
+        </tr>
+        <tr>
+            <th height="20px"></th>
+        </tr>
+    </table>
+
+    //add ConfirmDialog
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirm" name="submitButton" value="Save" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                    <Button id="btnApproveM" name="submitButton" value="Approve" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal -->
+<div class="modal fade" tabindex="-1" id="myModal" role="dialog">
+    <div class="modal-dialog" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Transaction</h4>
+            </div>
+
+            <!-- PartialView -->
+            <div class="modal-body" id="Preview">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+

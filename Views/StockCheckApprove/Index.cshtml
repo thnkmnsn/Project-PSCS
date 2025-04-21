@@ -1,0 +1,92 @@
+﻿@model PSCS.ModelsScreen.StockCheckApproveScreen 
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1 class="H1">Stock Check Approve</h1>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Stock Check Approve</title>
+</head>
+<body>
+    @using (Html.BeginForm("Index", "StockCheckApprove", FormMethod.Post))
+    {
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <tr>
+            <td>
+                <div class="details @(@Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {<strong>@PSCS.Resources.Common_cshtml.Success</strong>}
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {<strong>@PSCS.Resources.Common_cshtml.Information</strong>}
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {<strong>@PSCS.Resources.Common_cshtml.Warning</strong>}
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {<strong>@PSCS.Resources.Common_cshtml.Error</strong>}
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <Button id="btnOK" name="submitButton" value="OK" class="btn btn-primary btn-large">OK</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table border="1" cellSpacing="0" cellPadding="0" width="100%">
+                    <tr>
+                        <th style="width:17%">item code</th>
+                        <th style="width:6%">Heat no</th>
+                        <th style="width:30%">Description</th>
+                        <th style="width:10%">Actual</th>
+                        <th style="width:12%">Status</th>
+                        <th style="width:50%">Remark</th>
+                    </tr>
+                    @foreach (var item in Model.PipeItemList)
+                    {
+                    <tr>
+                        <th>@item.ItemCode</th>
+                        <th>@item.HeatNo</th>
+                        <th>@item.Description</th>
+                        <th>
+                            <a href="#" data-toggle="popover" data-trigger="hover" id="@item.ItemCode"></a>
+                        </th>
+                        <th>
+                            <select>
+                                <option value="1">Check</option>
+                                <option value="2">Submit</option>
+                                <option value="3">Need to Check</option>
+                            </select>
+                        </th>
+                        <th>
+                            <input type="text" />
+                        </th>
+                    </tr>
+                    }
+                </table>
+            </th>
+        </tr>
+    </table>
+    }
+    <table></table>
+
+
+</body>
+</html>
+

@@ -1,0 +1,214 @@
+﻿@using CoolMenu @* !!!! don't forget about namespace*@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href=@Url.Action("../Icon/PSCSIcon16.ico") />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="~/Content/MvcGrid/mvc-grid.css" rel="stylesheet">
+    <title>PSCS - @ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/Content/DropdownMenuExtra.css")
+
+    <style>
+        body {
+            margin-top: -50px;
+        }
+
+
+        .label {
+            float: left;
+            font-size: 16px;
+            color: white;
+            padding: 14px 16px;
+            text-decoration: none;
+            text-align: left;
+        }
+
+        .menu_size {
+            height: 75px;
+        }
+    </style>
+    @*<style>
+            body {
+                margin-top: -50px;
+            }
+
+            .mynav_navbar_header {
+                /*overflow: hidden;*/
+                background-color: #045099;
+                /*font-family: Arial, Helvetica, sans-serif;*/
+            }
+
+                .mynav_navbar_header a {
+                    float: left;
+                    font-size: 11px;
+                    color: white;
+                    padding: 14px 16px;
+                    text-decoration: none;
+                    text-align: right;
+                }
+
+                .mynav_navbar_header label {
+                    float: left;
+                    font-size: 16px;
+                    color: white;
+                    padding: 14px 16px;
+                    text-decoration: none;
+                    text-align: left;
+                }
+
+            .label {
+                float: left;
+                font-size: 16px;
+                color: white;
+                padding: 14px 16px;
+                text-decoration: none;
+                text-align: left;
+            }
+
+        </style>*@
+    @*<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script>
+            //$(document).ready(function () {
+            //    $('#hasLevel3').on("click", function (e) {
+            //        //$(this).next('ul').Toggle();
+            //        if ($(this).next('ul').hasClass("open")) {
+            //            $(this).next('ul').removeClass("open");
+            //        }
+            //        else {
+            //            $(this).next('ul').addClass("open");
+            //        }
+            //        e.stopPropagation();
+            //        //e.preventDefault();
+            //    });
+            //});
+        </script>*@
+    @*<script type="text/javascript">
+            function myFunction() {
+                document.getElementById("myDropdown").classList.toggle("show");
+            }
+
+            // Close the dropdown menu if the user clicks outside of it
+            window.onclick = function (event) {
+                if (!event.target.matches('.dropbtn')) {
+
+                    var dropdowns = document.getElementsByClassName("dropdown-content");
+                    var i;
+                    for (i = 0; i < dropdowns.length; i++) {
+                        var openDropdown = dropdowns[i];
+                        if (openDropdown.classList.contains('show')) {
+                            openDropdown.classList.remove('show');
+                        }
+                    }
+                }
+            }
+        </script>*@
+</head>
+<body>
+    <div class="nav_navbar_header navbar-inverse" style="background-color:#011755;">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+
+                @*@if (ViewBag.LoginPage != true)
+        {
+            <a href="/Menu/PSC0100" class="navbar-brand" style="padding:10px 10px 10px 15px;">
+                <img src="~/Image/Awaji.png" width="100px">
+            </a>
+            <a href="/Menu/PSC0100" class="navbar-brand navbar-title">
+                <p>
+                    <span id="LabelAppTitle" class="label">Pipe Stock Control System</span>
+                    <span id="LabelVersion" class="label">v.1.0.0.1</span>
+                </p>
+            </a>
+        }
+        else
+        {
+            <a href="../" class="navbar-brand" style="padding:10px 10px 10px 15px;">
+                <img src="~/Image/Awaji.png" width="100px">
+            </a>
+            <a href="../" class="navbar-brand navbar-title">
+                <p>
+                    <span id="LabelAppTitle" class="label">Pipe Stock Control System</span>
+                    <span id="LabelVersion" class="label">v.1.0.0.1</span>
+                </p>
+            </a>
+        }*@
+
+                @{
+                    string urlpath;
+                    if (Session["InitializeActionName"] != null)
+                    {
+                        urlpath = "/Menu/PSC0100";
+                    }
+                    else
+                    {
+                        urlpath = "../";
+                    }
+                    <a href=@urlpath class="navbar-brand" style="padding:10px 10px 10px 15px;">
+                        <img src="~/Image/Awaji10.png" width="100px">
+                    </a>
+                    <a href=@urlpath class="navbar-brand navbar-title">
+                        <p>
+                            <span id="LabelAppTitle" class="label">Pipe Stock Control System</span>
+                            <span id="LabelVersion" class="label">v.1.0.0.22</span>
+                        </p>
+                    </a>
+                }
+
+            </div>
+            <div class="navbar-collapse collapse" style="height: auto;">
+                <ul class="nav navbar-nav navbar-right">
+                    @{
+                        var controllerName = this.ViewContext.RouteData.Values["controller"].ToString();
+
+                        @Html.Raw(Html.GetMenuHtml("LanguageMenu", controllerName, ""))
+                    }
+
+                    @if (ViewBag.LoginPage != true)
+                    {
+                        var strLoginUserName = "";
+                        if (Session["LoginUserName"] != null)
+                        {
+                            strLoginUserName = Convert.ToString(Session["LoginUserName"]);
+                        }
+
+                        Session["CurrentLoginUserName"] = strLoginUserName;
+
+                        @Html.Raw(Html.GetMenuHtml("AccountMenu", "", strLoginUserName))
+                    }
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+
+   
+    <div class="container body-content">
+        
+        @RenderBody()
+
+        <script src="~/Scripts/MvcGrid/mvc-grid.js"></script>
+        <script>
+            [].forEach.call(document.getElementsByClassName('mvc-grid'), function (element) {
+                new MvcGrid(element);
+            });
+        </script>
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - Innova Software Co., Ltd.</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

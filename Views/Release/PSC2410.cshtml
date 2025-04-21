@@ -1,0 +1,597 @@
+﻿@model PSCS.ModelsScreen.ReleaseScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC2410_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/SessionTimeout.js"></script>
+    <script language="javascript" type="text/javascript">
+        $(document).ready(function () {
+
+            ChackSum();
+
+            $('#SelectedRequestId').val("");
+           
+        });
+
+        // Create
+        $('#WIBarcode').keypress(function (event) {
+            if (event.keyCode == 13) {
+                $("#Requestform").submit();
+                $('#WIBarcode').val('');
+                $('#WIBarcode').focus();
+
+                event.preventDefault();
+            }
+        });
+
+        $(document).ready(function () {
+            var row = @Model.Total
+            console.log(row);
+            if (row > 0) {
+                $('#btnRequest').removeAttr('disabled', 'disabled');
+            } else {
+                $('#btnRequest').attr('disabled', 'disabled');
+            }
+        });
+
+        $(function () {
+            $(".datepicker").datepicker({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+            });
+
+        });
+
+        // Row selected
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            //var pRowNo = $(e.target).closest('tr').find('td:nth-child(2)').text();
+            //var tr = $(e.target).closest('tr');
+            //$('#SelectedRowNo').val(pRowNo);
+
+            var arr = $('input[type=checkbox]:checked', ".mvc-grid tr").map(function () {
+                return $(this).val();
+            }).get();
+            $('#SelectedRequestId').val(arr);
+
+            if (arr.length == 0) {
+                $('#btnDelete').attr('disabled', 'disabled');
+            }
+            else {
+                $('#btnDelete').removeAttr('disabled');
+            }
+        });
+
+        $('html').click(function (e) {
+            $('#my-tb>tbody').find('tr').eq(indexforEdit).removeClass('selected');
+
+            //$('#my-tb>tbody').find('tr').eq(indexforEdit).find('.edit-mode').hide();
+
+            //$('#my-tb>tbody').find('tr').eq(indexforEdit).find('.display-mode').show();
+
+            overflow = false;
+
+            //set value
+            SetValtoGrid();
+            ChackSum();
+            $('#rowNo').val('');
+        });
+
+
+        $('.mvc-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+        $('.mvc-grid tr').click(function (e) {
+            e.stopPropagation();
+        });
+
+        $('#btnDelete').click(function (e) {
+            e.stopPropagation();
+            $("#btnConfirm").val("Delete");
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnDelete1').click(function (e) {
+            e.stopPropagation();
+        });
+
+        $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });
+
+        var model = @Html.Raw(Json.Encode(Model.WIRequestList));
+        var pRowNo = "";
+        var overflow = false;
+        var sumObjList = [];
+
+        // Check Condition for Input.Readonly
+        function SetReadOnlyQTY() {
+            var releaseid;
+            var txt = $('input[id*="txtQTY"]');
+
+            for (var i = 0; i < txt.length; i++) {
+
+                releaseid = parseFloat($('#my-tb>tbody').find('tr').eq(i).find('td').eq(11).text());
+
+                if (releaseid != 0) {
+                    txt[i].setAttribute("readonly", "readonly");
+                } else {
+                    txt[i].removeAttribute("readonly", 0);
+                }
+            }
+
+        }
+
+        function OnBlurEvent(pRowIndex, pQTY, ptxtInputQTY) {
+            var rows = $("#my-tb tbody").children();
+            //$(rows[1]).closest('tr').find('#txtQTY').val('100');           //Status
+            var strtxtInputQTY = ptxtInputQTY.id
+            var InputQTY = $(rows[pRowIndex]).closest('tr').find('#' + strtxtInputQTY).val();   //Input qty
+            var remain = $(rows[pRowIndex]).closest('tr').find('td:nth-child(10)').text();
+
+            if (isNumeric(InputQTY) == true) {
+                var remainQTY = (pQTY - InputQTY);
+                $(rows[pRowIndex]).closest('tr').find('td:nth-child(10)').text(remainQTY.toFixed(2));    //act qty
+            }
+            else {
+                //string roll back value
+                $(rows[pRowIndex]).closest('tr').find('#' + strtxtInputQTY).val((pQTY - remain).toFixed(2));
+            }
+
+
+        }
+
+        //function SetRemain() {
+        //    var rowsCount = $('#my-tb tbody tr').length;
+        //    var oldQTY;
+        //    var remainQTY;
+        //    var newQTY;
+        //    var newremainQTY;
+
+        //    for (i = 0; i < rowsCount; i++) {
+        //        //oldQTY = parseFloat($('#my-tb>tbody').find('tr').eq(i).find('td').eq(8).text());
+        //        //remainQTY = parseFloat($('#my-tb>tbody').find('tr').eq(i).find('td').eq(10).text());
+        //        oldQTY = parseFloat($('#my-tb>tbody').find('tr').eq(i).find('td').eq(9).text());
+        //        remainQTY = parseFloat($('#my-tb>tbody').find('tr').eq(i).find('td').eq(8).text());
+        //        newQTY = $('#my-tb>tbody').find('tr').eq(i).find("#QtyTxt").val();
+
+
+        //        //alert(oldQTY);
+        //        //alert(remainQTY);
+        //        //alert(newQTY);
+        //        var rows = $("#my-tb tbody").children();
+        //        if (oldQTY != newQTY) {
+
+        //            newremainQTY = (oldQTY - newQTY);
+        //            $(rows[i]).closest('tr').find('td:nth-child(11)').text(newremainQTY.toFixed(2));
+
+        //        }
+        //        else {
+        //            newremainQTY = 0;
+        //            $(rows[i]).closest('tr').find('td:nth-child(11)').text(newremainQTY.toFixed(2));
+        //        }
+
+        //        alert(newremainQTY);
+        //    }
+        //}
+
+        //send sum from grid to controller
+        @*function MapSum() {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("PSC2410go2420MapSum", "WiRequest")',
+                contentType: 'application/json',
+                data: JSON.stringify({ wiSumList: sumObjList }),
+                success: function () {
+                    //console.log(sumObjList);
+                    $("#btnRequest1").click();
+                 }
+            });
+        }*@
+
+        //$('#btnRequest').click(function () {
+        //    TempEditGrid();
+        //    MapSum();
+        //});
+
+        function SetValtoGrid() {
+            //set value
+            var editQty = $('#my-tb>tbody').find('tr').eq(indexforEdit).find("#QtyTxt").val();
+            $('#my-tb>tbody').find('tr').eq(indexforEdit).find("#Qtylbl").html(editQty);
+
+             //var editRemain = $('#my-tb>tbody').find('tr').eq(indexforEdit).find("#RemainTxt").val();
+            //$('#my-tb>tbody').find('tr').eq(indexforEdit).find("#Remainlbl").html(editRemain);
+        }
+
+        //function ChackSum() {
+        //    if ($('#my-tb>tbody').find('tr').eq(0).find('td').eq(0).text() == 1) {
+
+        //        var rowsCount = $('#my-tb tbody tr').length;
+        //        var objList = [];
+        //        var obj = {};
+        //        var dateVal;
+        //        var itemVal;
+        //        var heatVal;
+        //        var descriptionVal;
+        //        var markerVal;
+        //        var qtyVal;
+
+        //        sumObjList = [];
+
+        //        var uniqueObjList = [];
+        //        var sumObj = {};
+
+        //        for (i = 0; i < rowsCount; i++) {
+        //            itemVal = $('#my-tb>tbody').find('tr').eq(i).find('td').eq(1).text();
+        //            dateVal = $('#my-tb>tbody').find('tr').eq(i).find('td').eq(2).text();
+        //            heatVal = $('#my-tb>tbody').find('tr').eq(i).find('td').eq(5).text();
+        //            descriptionVal = $('#my-tb>tbody').find('tr').eq(i).find('td').eq(6).text();
+        //            markerVal = $('#my-tb>tbody').find('tr').eq(i).find('td').eq(7).text();
+        //            qtyVal = parseFloat($('#my-tb>tbody').find('tr').eq(i).find('td').eq(8).text());
+
+        //            obj = { index: i, ReleaseDate: dateVal, ItemCode: itemVal, HeatNo: heatVal, Description: descriptionVal, Maker: markerVal, Qty: qtyVal };
+        //            objList.push(obj);
+        //        }
+
+        //        //getKey
+        //        uniqueObjList = objList
+        //            .filter((thing, index, self) =>
+        //                index === self.findIndex((t) => (
+        //                    t.ItemCode === thing.ItemCode && t.HeatNo === thing.HeatNo
+        //                ))
+        //        )
+
+        //        for (i = 0; i < uniqueObjList.length; i++) {
+
+        //            sumObj = { ReleaseDate: "", ItemCode: uniqueObjList[i].ItemCode, HeatNo: uniqueObjList[i].HeatNo, Description: "", Maker: "", Qty: 0 };
+        //            sumObjList.push(sumObj);
+
+        //        }
+
+        //        //sum Qty
+        //        for (i = 0; i < sumObjList.length; i++) {
+        //            for (j = 0; j < rowsCount; j++) {
+
+        //                if (sumObjList[i].ItemCode == objList[j].ItemCode && sumObjList[i].HeatNo == objList[j].HeatNo) {
+
+        //                    sumObjList[i].ReleaseDate = objList[j].ReleaseDate;
+        //                    sumObjList[i].HeatNo = objList[j].HeatNo;
+        //                    sumObjList[i].Description = objList[j].Description;
+        //                    sumObjList[i].Maker = objList[j].Maker;
+
+        //                    sumObjList[i].Qty += objList[j].Qty;
+        //                }
+        //            }
+        //        }
+
+        //        for (i = 0; i < sumObjList.length; i++) {
+
+
+        //            if (!Number.isInteger(sumObjList[i].Qty)) {
+        //                $('#btnRequest').prop('disabled', true);
+        //                break;
+        //            } else {
+        //                $('#btnRequest').prop('disabled', false);
+        //            }
+        //        }
+        //    }
+        //}
+
+        function isNumeric(n) {
+            return !isNaN(parseFloat(n)) && isFinite(n);
+        }
+
+        //edit grid
+        function TempEditGrid() {
+
+            console.log("ajax for edit");
+
+            var rowsCount = $('#my-tb tbody tr').length;
+            var objList = [];
+            var obj = {};
+            var jobVal;
+            var qtyVal;
+            var releaseQtyVal;
+            var presentQtyVal;
+
+            for (i = 0; i < rowsCount; i++) {
+                jobVal = $('#my-tb>tbody').find('tr').eq(i).find('td').eq(3).text();
+                qtyVal = parseFloat($('#my-tb>tbody').find('tr').eq(i).find('td').eq(8).text());
+                releaseQtyVal = parseFloat($('#my-tb>tbody').find('tr').eq(i).find('td').eq(12).text());
+                presentQtyVal = releaseQtyVal = parseFloat($('#my-tb>tbody').find('tr').eq(i).find('td').eq(13).text());
+                obj = { JobNo: jobVal, Qty: qtyVal, ReleaseQTY: releaseQtyVal };
+                objList.push(obj);
+            }
+            console.log(objList);
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("PSC2410SaveChange", "WiRequest")',
+                contentType: 'application/json',
+                data: JSON.stringify({ wiEditsList: objList }),
+                success: function () {
+
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+
+        }
+
+    </script>
+}
+
+<style>
+    .edit-mode {
+        width: 70px;
+    }
+
+    .divgrid-rowno {
+        width: 80px;
+        text-align: center;
+    }
+
+    .selected {
+        background-color: #B0BED9;
+    }
+
+    .table-hover > tbody > tr:hover.selected > td,
+    .table-hover > tbody > tr:hover.selected > th {
+        background-color: #aab7d1;
+    }
+
+    #my-tb th {
+        text-align: center;
+    }
+
+    #my-tb td {
+        vertical-align: middle;
+    }
+</style>
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC2410_cshtml.Title</h1>
+
+@using (Html.BeginForm("PSC2410", "Release", FormMethod.Post, new { id = "Requestform" }))
+{
+
+    <table border="0" cellSpacing="0" cellPadding="0" width=100%>
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Button area -->
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <Button id="btnRequest" name="submitButton" value="Request" class="btn btn-large btn-primary">@PSCS.Resources.PSC2410_cshtml.Button_Request</Button>
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+
+        <!-- Total area -->
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <p>@PSCS.Resources.Common_cshtml.Total: @Html.DisplayFor(model => model.Total)  @PSCS.Resources.Common_cshtml.Item</p>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+
+        <!-- Space area -->
+        <tr>
+            <th height="5px"></th>
+        </tr>
+
+        <!-- Criteria area -->
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2410_cshtml.FilterBarcode</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.Editor("WIBarcode", new { htmlAttributes = new { @style = "width:170px;", @maxlength = "10", autofocus = "autofocus" } })
+                                        @Html.Hidden("rowNo")
+                                        @using (Html.BeginForm("PSC2420", "Release", FormMethod.Get))
+                                        {
+                                            <Button type="submit" id="btnRequest1" name="submitButton" value=Request class="btn btn-large btn-primary" style="display:none"> @PSCS.Resources.PSC2410_cshtml.Button_Request </Button>
+                                        }
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+
+        <!-- Space area -->
+        <tr>
+            <th height="10px"></th>
+        </tr>
+
+        <!-- Delete area -->
+        <tr>
+            <th>
+                <table align="left">
+                    <tr>
+                        <th>
+                            @Html.HiddenFor(m => m.SelectedRequestId)
+                            @*@Html.TextBoxFor(m => m.SelectedRequestId)*@
+                            <Button id="btnDelete" name="submitButton" value="Delete" class="btn btn-large btn-red" disabled="disabled">@PSCS.Resources.PSC2410_cshtml.Button_Delete</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+
+        <!-- Space area -->
+        <tr>
+            <th height="10px"></th>
+        </tr>
+
+        <!-- Body : Detail -->
+        <tr>
+            <th>
+                <div class="mvc-grid">
+                    <table id="my-tb" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Select</th>
+                                <th>@PSCS.Resources.PSC2410_cshtml.GridRowNo</th>
+                                <th>@PSCS.Resources.PSC2410_cshtml.GridDate</th>
+                                <th>@PSCS.Resources.PSC2410_cshtml.GridJobNo</th>
+                                <th>@PSCS.Resources.PSC2410_cshtml.GridMFGNo</th>
+                                <th>@PSCS.Resources.PSC2410_cshtml.GridHeatNo</th>
+                                <th>@PSCS.Resources.PSC2410_cshtml.GridDescription</th>
+                                <th>@PSCS.Resources.PSC2410_cshtml.GridMakerName</th>
+                                <th>@PSCS.Resources.PSC2410_cshtml.GridQTY</th>
+                                <th>@PSCS.Resources.PSC2410_cshtml.GridRemain</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grid_body">
+                            @for (int i = 0; i < Model.WIRequestList.Count; i++)
+                            {
+                                <tr>
+                                    <td class="gridtext-center">
+                                        <input type="checkbox" name="rowNo" value="@Model.WIRequestList[i].RequestId" />
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.WIRequestList[i].RowNo)
+                                        @Html.HiddenFor(x => Model.WIRequestList[i].RequestId, new { @id = "hdnRequestId" })
+                                        @Html.HiddenFor(x => Model.WIRequestList[i].JobNo, new { @id = "hdnJobNo" })
+                                        @Html.HiddenFor(x => Model.WIRequestList[i].ItemCode, new { @id = "hdnItemCode" })
+                                        @Html.HiddenFor(x => Model.WIRequestList[i].HeatNo, new { @id = "hdnHeatNo" })
+                                        @Html.HiddenFor(x => Model.WIRequestList[i].ReleaseQTY, new { @id = "hdnReleaseQTY" })
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Convert.ToString(string.Format("{0:yyyy-MM-dd}", Model.WIRequestList[i].RequestDate))
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.WIRequestList[i].JobNo)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.WIRequestList[i].MfgNo)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.WIRequestList[i].HeatNo)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.WIRequestList[i].Description)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.WIRequestList[i].Maker_Name)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.EditorFor(x => Model.WIRequestList[i].RequestQTY, new { @id = "txtQTY", @class = "form-control edit edit-mode", htmlAttributes = new { @style = "height:32px; width:80px;text-align:right;", @onblur = "OnBlurEvent(" + i + "," + Model.WIRequestList[i].ReleaseQTY + ", this);" } })
+                                    </td>
+                                    <td class="editable-cell gridtext-right">
+                                        @Html.DisplayFor(x => Model.WIRequestList[i].RemainQTY)
+                                    </td>
+                                </tr>
+                            }
+                            @if (Model.WIRequestList == null || Model.WIRequestList.Count == 0)
+                            {
+                                <tr class="mvc-grid-empty-row">
+                                    <td colspan="10">
+                                        No data found
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </th>
+        </tr>
+    </table>
+
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirm" name="submitButton" value="Confirm" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+

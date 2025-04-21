@@ -1,0 +1,653 @@
+﻿@model PSCS.ModelsScreen.StockCheckScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@{
+    ViewBag.Title = PSCS.Resources.PSC2310_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_thai_min.js"></script>
+    <script src="~/Scripts/SessionTimeout.js"></script>
+    <script language="javascript" type="text/javascript">
+        var gridLoop;
+        var timer_is_on = 0;
+        var pRowNo = "";
+        var LangTh = false;
+        var changeStatus = false;
+        var statusList = @Html.Raw(Json.Encode(Model.VisorStatusList));
+
+        $(document).ready(function () {
+            if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true
+            }
+            else {
+                LangTh = false
+            }
+
+            $(".datepicker").datepicker_thai({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                langTh: LangTh,
+                yearTh: LangTh,
+            });
+
+            UpdateTotal();
+
+            StartCount();
+
+            function RefreshPartial() {
+                //this will wait 3 seconds and then fire the load partial function
+                setTimeout(function () {
+                    loadPartialView();
+                    //recall this function so that it will continue to loop
+                    RefreshPartial();
+                }, 5000);
+            }
+
+            //initialize the loop
+            RefreshPartial();
+        });
+
+        function loadPartialView() {
+            var rows = $("#grd tbody").children();
+
+            for (var i = 0, rowLen = $("#grd tbody").children().length; i < rowLen; i++) {
+                var strIndex = i;
+                var strStockCheckId = $(rows[i]).closest('tr').find('#hdnStockCheckId').val();
+                var strItemCode = $(rows[i]).closest('tr').find('#hdnItemCode').val();
+                var strHeatNo = $(rows[i]).closest('tr').find('#hdnHeatNo').val();
+
+                loadPartialData(strIndex, strStockCheckId, strItemCode, strHeatNo);
+            }
+        }
+
+        function loadPartialData(pIndex, pStockCheckId, pItemCode, pHeatNo) {
+            $.ajax({
+                @*url: '@Url.Action("Get_ActualQty", "StockCheck")',*@
+                url: '@Url.Action("GetActualQty", "StockCheck")',
+                type: 'post',
+                cache: false,
+                async: true,
+                data: {
+                    pStockCheckId: pStockCheckId,
+                    pItemCode: pItemCode,
+                    pHeatNo: pHeatNo,
+                },
+                success: function (response) {
+                    var rows = $("#grd tbody").children();
+                    $(rows[pIndex]).closest('tr').find('td:nth-child(8)').text(response.ActualQty);    //act qty
+                    //$(rows[pIndex]).closest('tr').find('#ddlStatus').val(response.Status);           //Status
+                    $(rows[pIndex]).closest('tr').find('td:nth-child(9)').text(response.StatusText);    //StatusText
+                },
+                error: function (reponse) {
+                    //alert("error : " + reponse);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        function InitialView_SuperVisor() {
+            $('#divId').removeClass().addClass("hide");
+            $('#strongId').text("");
+            $('#lblId').text("");
+            //AdjustApprovebtn();
+        }
+
+        // Start countdown time reload grid
+        function StartCount() {
+            if (!timer_is_on) {
+                timer_is_on = 1;
+                TimedCount();
+            }
+        }
+
+        // Pause time
+        function StopCount() {
+            clearTimeout(gridLoop);
+            timer_is_on = 0;
+        }
+
+        // function countdown
+        function TimedCount() {
+            LoadPartialView();
+            UpdateTotal();
+            gridLoop = setTimeout(TimedCount, 5000);
+        }
+
+        // Reload grid
+        function LoadPartialView() {
+            var rows = $("#plan-tb tbody").children();
+            //console.log("=======");
+
+            for (var i = 0, rowLen = $("#plan-tb tbody").children().length; i < rowLen; i++) {
+                var rowNo = rows[i].cells[0].innerText;
+
+                LoadPartialData(i, rowNo);
+            }
+        }
+
+        // Get ActualQty and reload only ActualQty and Status cell
+        function LoadPartialData(pIndex, rowNo) {
+            $.ajax({
+                @*url: '@Url.Action("Get_ActualQty", "StockCheck")',*@
+                url: '@Url.Action("GetActualQty", "StockCheck")',
+                type: 'post',
+                cache: false,
+                async: true,
+                data: { pRowNo: rowNo },
+                success: function (result) {
+                    var rows = $("#plan-tb tbody").children();
+
+                    $(rows[pIndex]).closest('tr').find('td:nth-child(9)').text(result.ActualQty.toFixed(2));   //ActQty
+                    //$(rows[pIndex]).closest('tr').find('#StatusTxt').val(result.Status);            //Status
+                    $(rows[pIndex]).closest('tr').find('td:nth-child(10)').text(result.StatusText);    //StatusText
+                    AdjustApprovebtn();
+                },
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+                    $('#divID').addClass("show alert alert-danger");
+                    $('#strongId').text("@PSCS.Resources.Common_cshtml.Error");
+                    $('#lblId').text(customErrorMessage);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        // Approve click
+        @*$('#btnApprove').click(function () {
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Approve_StockCheckList", "StockCheck")',
+                contentType: 'application/json',
+                data: {},
+                success: function (reponse) {
+                    if (reponse.success) {
+                        $('#divId').addClass("show alert alert-success");
+                        $('#strongId').text("Success!");
+                        $('#lblId').text(reponse.message);
+                    }
+                    else {
+                        $('#divId').addClass("show alert alert-danger");
+                        $('#strongId').text("Danger!");
+                        $('#lblId').text(reponse.message);
+                    }
+
+                    //$('#btnFilter').click();
+
+                    //new MvcGrid(document.querySelector('#GridVisor')).reload();
+                },
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+                    $('#divId').addClass("show alert alert-danger");
+                    $('#strongId').text("Danger!");
+                    $('#lblId').text(customErrorMessage);
+                }
+
+            });
+        });*@
+
+        //// Grid click: can editable
+        //var indexforEdit = -1;
+        //$('.normal-grid tr').on('click', function (e) {
+        //    var pRowNo = $(e.target).closest('tr').find('td:nth-child(1)').text();
+        //    var tr = $(e.target).closest('tr');
+
+        //    if ($(this).hasClass('selected')) {
+        //        changeStatus = true;
+        //    }
+        //    else {
+        //        $('.normal-grid tr.selected').removeClass('selected');
+        //       // indexforEdit = $(this).index();
+        //        StopCount();
+
+        //        var pStatus = $('#plan-tb>tbody').find('tr').eq(indexforEdit).find("#StatusTxt").val();
+        //        var pRemark = $('#plan-tb>tbody').find('tr').eq(indexforEdit).find("#RemarkTxt").val();
+
+        //        console.log(statusList);
+
+        //        if (changeStatus) {
+        //            $(this).removeClass('selected');
+        //            $(this).parents('tr:first').find('.edit-mode').hide();
+        //            $(this).parents('tr:first').find('.display-mode').show();
+
+        //            if (pStatus != null) {
+        //                var statusTxt;
+        //                if (pStatus == 1) {
+        //                    statusTxt = statusList[0].Text;
+        //                }
+        //                else if (pStatus == 3) {
+        //                    statusTxt = statusList[1].Text;
+        //                }
+
+        //                $('#plan-tb>tbody').find('tr').eq(indexforEdit).find("#Statuslbl").html(statusTxt);
+        //            }
+        //            if (pRemark != null) {
+        //                $('#plan-tb>tbody').find('tr').eq(indexforEdit).find("#Remarklbl").html(pRemark);
+        //            }
+
+        //            SaveChange(pStatus, pRemark);
+        //            AdjustApprovebtn();
+        //            StartCount();
+        //            changeStatus = false;
+        //        }
+        //        else {
+        //            $(this).addClass('selected');
+        //            indexforEdit = $(this).index();
+
+        //            // if Status not need to check, Not show ddl
+        //            //if (pStatus == 3) {
+        //            //    tr.find("#Statuslbl").hide();
+        //            //    tr.find("#StatusTxt").show();
+        //            //}
+
+        //            tr.find("#Statuslbl").hide();
+        //            tr.find("#StatusTxt").show();
+        //            tr.find("#Remarklbl").hide();
+        //            tr.find("#RemarkTxt").show();
+
+        //            changeStatus = true;
+        //        }
+
+        //        $('#btnDelete').removeAttr('disabled');
+        //        $('#DeletedSelected').val(pRowNo);
+        //        pId = pRowNo;
+        //    }
+        //});
+
+        // Background click
+        //$(document).on("click", 'html', function (e) {
+        //    $('#plan-tb>tbody').find('tr').eq(indexforEdit).removeClass('selected');
+        //    var pStatus = $('#plan-tb>tbody').find('tr').eq(indexforEdit).find("#StatusTxt").val();
+        //    var pRemark = $('#plan-tb>tbody').find('tr').eq(indexforEdit).find("#RemarkTxt").val();
+
+
+        //    $('#plan-tb>tbody').find('tr').eq(indexforEdit).find('.edit-mode').hide();
+        //    $('#plan-tb>tbody').find('tr').eq(indexforEdit).find('.display-mode').show();
+
+        //    if (pStatus != null) {
+        //        var statusTxt;
+        //        if (pStatus == 1) {
+        //            statusTxt = statusList[0].Text;
+        //        }
+        //        else if (pStatus == 3) {
+        //            statusTxt = statusList[1].Text;
+        //        }
+
+        //        $('#plan-tb>tbody').find('tr').eq(indexforEdit).find("#Statuslbl").html(statusTxt);
+        //    }
+        //    if (pRemark != null) {
+        //        $('#plan-tb>tbody').find('tr').eq(indexforEdit).find("#Remarklbl").html(pRemark);
+        //    }
+
+        //    SaveChange(pStatus, pRemark);
+        //    AdjustApprovebtn();
+        //    StartCount();
+        //    changeStatus = false;
+        //});
+
+        // SaveChange every time Unselected row
+        function SaveChange(status, remark) {
+            if (changeStatus) {
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("Update_StockCheckList", "StockCheck")',
+                    contentType: 'application/json',
+                    data: { pRow: indexforEdit, pStatus: status, pRemark: remark},
+                    success: function (reponse) {
+                        //console.log(reponse.success);
+                    },
+                    error: function (xhr, httpStatusMessage, customErrorMessage) {
+                        $('#divId').addClass("show alert alert-danger");
+                        $('#strongId').text("@PSCS.Resources.Common_cshtml.Error");
+                        $('#lblId').text(customErrorMessage);
+                    },
+                    complete: function (xhr, status) {
+                        IsLogonRequired(xhr.responseText);
+                    }
+                });
+            }
+        }
+
+        $('.normal-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+        $('.normal-grid tr').click(function (e) {
+            e.stopPropagation();
+        });
+
+        function UpdateTotal() {
+            $.ajax({
+                url: "/StockCheck/UpdateTotal_Supervisor/",
+                type: "GET",
+                dataType: "JSON",
+                data: {},
+                success: function (response) {
+                    console.log(response);
+                    $("#Totalitem").text(response);
+                },
+                error: function (reponse) {
+                    //alert("error : " + reponse);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        // if status not 'Submit' and not have Remark, Disable approve
+        //function AdjustApprovebtn() {
+        //    var rowsCount = $('#plan-tb tbody tr').length;
+        //    var isNeed = false;
+        //    var staVal;
+        //    var remVal;
+
+        //    for (i = 0; i < rowsCount; i++) {
+        //        staVal = $('#plan-tb>tbody').find('tr').eq(i).find("#StatusTxt").val();
+        //        remVal = $('#plan-tb>tbody').find('tr').eq(i).find("#RemarkTxt").val();
+
+        //        if (staVal != "1" || remVal == "") {
+        //            isNeed = true;
+        //            break;
+        //        }
+        //    }
+
+        //    $('#btnApprove').prop('disabled', isNeed);
+        //}
+
+        $(document).ready(function () {
+            var row = @Model.Total
+            console.log(row);
+            if (row > 0) {
+                $('#btnVisorSave').removeAttr('disabled', 'disabled');
+                $('#btnApprove').removeAttr('disabled', 'disabled');
+            } else {
+                $('#btnVisorSave').attr('disabled', 'disabled');
+                $('#btnApprove').attr('disabled', 'disabled');
+            }
+        });
+
+        $('#btnVisorSave').on('click', function () {
+            $("#btnConfirm").val("Save");
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnApprove').on('click', function () {
+            $("#btnConfirm").val("Approve");
+            $("#itemModal").modal("show");
+            return false;
+        });
+    </script>
+}
+
+<style>
+    .edit-mode {
+        width: 90px;
+        display: none;
+    }
+
+    .selected {
+        background-color: #B0BED9;
+    }
+
+    .tb-header {
+        padding: 0.75em 3.5em 0.75em 0.75em;
+        background-color: #f7f7f7;
+    }
+
+
+    .table-hover > tbody > tr:hover.selected > td,
+    .table-hover > tbody > tr:hover.selected > th {
+        background-color: #aab7d1;
+    }
+
+    #GridVisor th {
+        text-align: center;
+    }
+</style>
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC2310_cshtml.Title</h1>
+@using (Html.BeginForm("PSC2310_SuperVisor", "StockCheck", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div id="divId" class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")">
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+
+                    <strong id="strongId"> </strong>
+                    <label id="lblId" calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Button Area  -->
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <Button id="btnVisorSave" name="submitButton" value="Save" class="btn btn-large btn-green">@PSCS.Resources.PSC2310_cshtml.Button_Save</Button>
+                            <Button id="btnApprove" name="submitButton" value="Approve" class="btn btn-large btn-red">@PSCS.Resources.PSC2310_cshtml.Button_Approve</Button>
+                            <Button id="btnClearFilter" name="submitButton" value="ClearFilter" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_ClearFilter</Button>
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.PSC2310_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <p>@PSCS.Resources.Common_cshtml.Total: @Html.DisplayFor(model => model.Total) @PSCS.Resources.Common_cshtml.Item</p>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+
+        <!-- Criteria area -->
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- Stock Check Date -->
+                                    <th width="140px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_StockCheckDate</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.EditorFor(m => m.FilterStockDate, new { htmlAttributes = new { @class = "datepicker row", @readonly = "readonly" } })
+                                    </th>
+
+                                    <!-- Yard -->
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_Yard</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.FilterPipeYard, Model.PipeYardList, @PSCS.Resources.Common_cshtml.All, (object)new { @id = "ddlPipeYard", @style = "height:25px; width:120px;" })
+                                    </th>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterLocation</label>
+                                    </th>
+                                    <th width="140px">
+                                        @Html.DropDownListFor(m => m.FilterLocationID, Model.LocationList, @PSCS.Resources.Common_cshtml.All, new { @id = "ddlLoc", @style = "height:25px; width:120px;", @tabindex = 4 })
+                                    </th>
+                                    <!-- Status -->
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filtter_Status</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.FilterStatus, Model.StatusList, @PSCS.Resources.Common_cshtml.All, (object)new { @id = "ddlStatus", @style = "height:25px; width:120px;" })
+                                    </th>
+
+                                    <!-- Button -->
+                                    <th width="140px">
+                                        <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large">@PSCS.Resources.PSC2310_cshtml.Button_Filter</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="20px"></th>
+        </tr>
+
+        <!--Grid Area -->
+        <tr>
+            <th>
+                @*@Html.AjaxGrid(Url.Action("PSC2310VisorTable"), new { id = "GridVisor" })*@
+                <div id="GridVisor" class="normal-grid" data-name data-id="0">
+                    <table id="plan-tb" class="table table-bordered table-hover">
+                        <thead>
+                            <tr class="tb-header">
+                                <th class="grid-headers">@PSCS.Resources.PSC2310_cshtml.Grid_RowNo</th>
+                                <th>@PSCS.Resources.PSC2310_cshtml.Grid_CheckDate</th>
+                                <th>@PSCS.Resources.PSC2310_cshtml.Grid_Yard</th>
+                                <th>@PSCS.Resources.PSC2310_cshtml.Grid_Location</th>
+                                <th style="display: none;">@PSCS.Resources.PSC2310_cshtml.Grid_Item</th>
+                                <th>@PSCS.Resources.PSC2310_cshtml.Grid_HeatNo</th>
+                                <th>@PSCS.Resources.PSC2310_cshtml.Grid_Description</th>
+                                <th>@PSCS.Resources.PSC2310_cshtml.Grid_Qty</th>
+                                <th>@PSCS.Resources.PSC2310_cshtml.Grid_ActualQty</th>
+                                <th style="width:107px;">@PSCS.Resources.PSC2310_cshtml.Grid_Status</th>
+                                <th style="width:107px;">@PSCS.Resources.PSC2310_cshtml.Grid_Remark</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grid_body">
+                            @for (int i = 0; i < Model.StockVisorList.Count; i++)
+                            {
+                                <tr style="font-weight:normal">
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(m => Model.StockVisorList[i].RowNo)
+                                        @Html.HiddenFor(m => Model.StockVisorList[i].StockCheckId, new { @id = "hdnStockCheckId" })
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(m => Model.StockVisorList[i].StockCheckDate)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(m => Model.StockVisorList[i].YardName)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(m => Model.StockVisorList[i].LocationName)
+                                    </td>
+                                    <td class="gridtext-center" style="display: none;">
+                                        @Html.DisplayFor(m => Model.StockVisorList[i].ItemCode)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(m => Model.StockVisorList[i].HeatNo)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(m => Model.StockVisorList[i].Description)
+                                    </td>
+                                    <td class="gridtext-right">
+                                        @Html.DisplayFor(m => Model.StockVisorList[i].Qty)
+                                    </td>
+                                    <td class="gridtext-right">
+                                        @Html.DisplayFor(m => Model.StockVisorList[i].ActualQty)
+
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @*@Html.DropDownListFor(x => Model.StockVisorList[i].Status, new SelectList(Model.StockVisorList[i].StatusList, "Value", "Text", Model.StockVisorList[i].Status), new { @id = "ddlStatus" })*@
+                                        @Html.DisplayFor(x => Model.StockVisorList[i].StatusText)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.EditorFor(x => Model.StockVisorList[i].Remark, new { @class = "form-control edit edit-mode", htmlAttributes = new { @id = "txtRemark", @style = "height:32px; width:300px;" }, autocomplete = "off" })
+                                        @*<span id="Remarklbl" class="display-mode"> @item.Remark </span>
+                    <input id='RemarkTxt' class='form-control edit edit-mode' value="@item.Remark" autocomplete="off" />*@
+                                    </td>
+                                </tr>
+                            }
+
+                            @if (Model.StockVisorList == null || Model.StockVisorList.Count == 0)
+                            {
+                                <tr class="mvc-grid-empty-row">
+                                    <td colspan="10">
+                                        No data found
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </th>
+        </tr>
+    </table>
+
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirm" name="submitButton" value="Confirm" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,58 @@
+﻿@model PSCS.ModelsScreen.TempleteScreen
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1 class="H1">Templete</h1>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Templete</title>
+</head>
+<body>
+    @using (Html.BeginForm("Index", "Templete", FormMethod.Post))
+    {
+        <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+            <tr>
+                <td>
+                    <div class="details @(@Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                        {<strong>@PSCS.Resources.Common_cshtml.Success</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                        {<strong>@PSCS.Resources.Common_cshtml.Information</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                        {<strong>@PSCS.Resources.Common_cshtml.Warning</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                        {<strong>@PSCS.Resources.Common_cshtml.Error</strong>}
+                        <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <table align="right">
+                        <tr>
+                            <th>
+                                <Button id="btnOK" name="submitButton" value="OK" class="btn btn-primary btn-large">OK</Button>
+                            </th>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+            <tr>
+                <th height="10px"></th>
+            </tr>
+        </table>
+    }
+    <table></table>
+
+
+</body>
+</html>
+
+

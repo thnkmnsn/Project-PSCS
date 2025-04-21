@@ -1,0 +1,133 @@
+﻿@model PSCS.ModelsScreen.ChangePasswordScreen
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC0011_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#pNewPass").text("");
+            $("#pConfirmPass").text("");
+        });
+
+           $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });
+
+    </script>
+}
+
+<!-- Title -->
+    <h1 class="H1">@PSCS.Resources.PSC0011_cshtml.Title</h1>
+
+@using (Html.BeginForm("PSC0011", "Account", FormMethod.Post))
+{
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <tr>
+            <td>
+                <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                    <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                    <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                    <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                    <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+        <!-- Button Area  -->
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <div class="panel-title form-group row text-right">
+                            <Button id="btnChangePassword" name="submitButton" value="Save" class="btn btn-large btn-green">@PSCS.Resources.PSC0011_cshtml.Button_Save</Button>
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                        </div>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="left">
+                    <tr>
+                        <th width="150px">
+                            <label class="textbox-caption">@PSCS.Resources.PSC0011_cshtml.CurrentPassword</label>
+                        </th>
+                        <th width="250px">
+                            @Html.EditorFor(model => model.CurrentPassword, new { htmlAttributes = new { @id = "pCurrentPass", @class = "form-control", @maxlength = "16", min = "0" , @placeholder = @PSCS.Resources.PSC0011_cshtml.CurrentPassword } })
+                            @Html.ValidationMessageFor(model => model.CurrentPassword, "", new { @class = "text-danger" })
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="15px"></th>
+                    </tr>
+
+                    <tr>
+                        <th width="150px">
+                            <label class="textbox-caption">@PSCS.Resources.PSC0011_cshtml.NewPassword</label>
+                        </th>
+                        <th width="250px">
+                            @Html.EditorFor(model => model.NewPassword, new { htmlAttributes = new { @id = "pNewPass", @class = "form-control", @maxlength = "16", min = "0", @placeholder = @PSCS.Resources.PSC0011_cshtml.NewPassword } })
+                            @Html.ValidationMessageFor(model => model.NewPassword, "", new { @class = "text-danger" })
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="15px"></th>
+                    </tr>
+
+                    <tr>
+                        <th width="150px">
+                            <label class="textbox-caption">@PSCS.Resources.PSC0011_cshtml.ConfirmPassword</label>
+                        </th>
+                        <th width="250px">
+                            @Html.EditorFor(model => model.ConfirmPassword, new { htmlAttributes = new { @id = "pConfirmPass", @class = "form-control", @maxlength = "16", min = "0", @placeholder = @PSCS.Resources.PSC0011_cshtml.ConfirmPassword } })
+                            @Html.ValidationMessageFor(model => model.ConfirmPassword, "", new { @class = "text-danger" })
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="10px"></th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        @*<tr>
+            <th height="5px"></th>
+        </tr>*@
+
+        @*<tr>
+            <th>
+                <div class="panel-title form-group row text-right">
+                    <Button id="btnChangePassword" name="submitButton" value="Save" class="btn btn-large btn-green">@PSCS.Resources.PSC0011_cshtml.Button_Save</Button>
+                </div>
+            </th>
+        </tr>*@
+    </table>
+}
+

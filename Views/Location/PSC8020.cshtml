@@ -1,0 +1,272 @@
+﻿@using PagedList.Mvc;
+@using PagedList;
+@model PSCS.ModelsScreen.LocationScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC8020_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/SessionTimeout.js"></script>
+    <script language="javascript" type="text/javascript">
+
+
+        $(document).ready(function () {
+            //console.log("Yard ID : ");
+            //console.log($('#ddlYard').val());
+
+            if (!$('#ddlYard').val()) {
+                ddlChangePlace();
+            }
+
+        });
+
+        // Add
+        $('#btnAdd').click(function () {
+            window.location.href = '@Url.Action("PSC8020_Edit", "Location")';
+        });
+
+        // Edit
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            var location = $(e.target).closest('tr').find('td:nth-child(6)').text();
+
+            url = '@Url.Action("PSC8020_Edit", "Location")';
+            window.location.href = url + '?location_code=' + location;
+        });
+
+
+        $('.mvc-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+
+        // ajax ddl
+        function ddlChangePlace() {
+            var _id = $('#ddlPlace').val();
+            //console.log(_id);
+
+            $.ajax({
+                url: "/Location/ddlChangePlace/",
+                type: "GET",
+                dataType: "JSON",
+                data: { Place: _id },
+                success: function (response) {
+                    //console.log(response);
+                    //console.log(response.length);
+
+                    $("#ddlYard").html("");
+                    $("#ddlYard").append($('<option></option>').val('').html('@PSCS.Resources.Common_cshtml.All'));
+
+                    $.each(response, function (index, value) {
+                        $("#ddlYard").append(
+                            $('<option></option>').val(value.YardID).html(value.Name)
+                        );
+                    });
+
+                    $('#ddlYard').prop('selectedIndex', 0);
+                },
+                error: function (reponse) {
+                    //alert("error : " + reponse);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+          $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });
+
+        $(document).ready(function () {
+            var row = @Model.Total
+            console.log(row);
+            if (row > 0) {
+                $('#btnAdd').removeAttr('disabled', 'disabled');
+            } else {
+                $('#btnAdd').attr('disabled', 'disabled');
+            }
+        });
+    </script>
+}
+
+<style>
+    .gridtext-right {
+        text-align: right;
+    }
+
+    .gridtext-center {
+        text-align: center;
+    }
+</style>
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC8020_cshtml.Title</h1>
+@using (Html.BeginForm("PSC8020", "Location", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label class="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Button Area  -->
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <input type="button" id="btnAdd" value="@PSCS.Resources.PSC8020_cshtml.Button_Add" class="btn btn-large btn-skyblue" />
+                            <Button id="btnClearFilter" name="submitButton" value="ClearFilter" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_ClearFilter</Button>
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <p>@PSCS.Resources.Common_cshtml.Total: @Html.DisplayFor(model => model.Total)  @PSCS.Resources.Common_cshtml.Item</p>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <!-- Criteria area -->
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- Place -->
+                                    <th width="50px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8020_cshtml.Filter_Place</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.DropDownListFor(m => m.FilterPlace, Model.PlaceList, new { @id = "ddlPlace", @style = "height:25px; width:120px;", onchange = "ddlChangePlace()" })
+                                    </th>
+
+                                    <!-- Yard -->
+                                    <th width="50px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8020_cshtml.Filter_Yard</label>
+                                    </th>
+                                    <th width="140px">
+                                        @Html.DropDownListFor(m => m.FilterYard, Model.YardList, PSCS.Resources.Common_cshtml.All, new { @id = "ddlYard", @style = "height:25px; width:120px;" })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- Name -->
+                                    <th width="50px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8020_cshtml.Filter_Name</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterName, new { @style = "height:25px; width:120px;" })
+                                    </th>
+
+                                    <!-- Active -->
+                                    <th width="50px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8020_cshtml.Filter_Active</label>
+                                    </th>
+                                    <th width="150px">
+                                        @Html.DropDownListFor(m => m.FilterActive, Model.ActiveList, PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;" })
+                                    </th>
+
+                                    <th width="140px">
+                                        <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large btnCustom5">@PSCS.Resources.PSC8020_cshtml.Button_Filter</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+
+        <!--Grid Area -->
+        <tr>
+            <th>
+                @(Html
+                                                    .Grid(Model.LocationList)
+                                                    .Build(columns =>
+                                                    {
+                                                        columns.Add(model => model.RowNo).Titled(PSCS.Resources.PSC8020_cshtml.Gride_RowNo).Css("gridtext-center");
+                                                        columns.Add(model => model.Place).Titled(PSCS.Resources.PSC8020_cshtml.Gride_Place).Css("gridtext-center").AppendCss("hide");
+                                                        columns.Add(model => model.PlaceName).Titled(PSCS.Resources.PSC8020_cshtml.Gride_Place).Css("gridtext-center");
+                                                        columns.Add(model => model.Yard).Titled(PSCS.Resources.PSC8020_cshtml.Gride_Yard).AppendCss("hide");
+                                                        columns.Add(model => model.YardName).Titled(PSCS.Resources.PSC8020_cshtml.Gride_Yard).Css("gridtext-center");
+                                                        columns.Add(model => model.LocationCode).Titled(PSCS.Resources.PSC8020_cshtml.Gride_Location).Css("gridtext-center");
+                                                        columns.Add(model => model.Name).Titled(PSCS.Resources.PSC8020_cshtml.Gride_Name).Css("gridtext-center");
+                                                        columns.Add(model => model.Active).Titled("ActiveId").AppendCss("hide");
+                                                        columns.Add(model => model.ActiveName).Titled(PSCS.Resources.PSC8020_cshtml.Gride_Active).Css("gridtext-center");
+                                                    })
+                                                    .Css("table-hover")
+                                                    .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+                                                    .Sortable()
+                )
+            </th>
+        </tr>
+    </table>
+    @Html.PagedListPager((IPagedList)ViewBag.OnePageOfProducts, page => Url.Action("paging", new { page=page,
+    FilterPlace = ViewBag.FilterPlace,
+    FilterYard = ViewBag.FilterYard,
+    FilterName = ViewBag.FilterName,
+    FilterActive = ViewBag.FilterActive,
+}))
+}
+

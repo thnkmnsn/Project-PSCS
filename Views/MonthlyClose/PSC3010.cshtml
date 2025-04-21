@@ -1,0 +1,212 @@
+﻿@model PSCS.ModelsScreen.MonthlyCloseScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@{
+    ViewBag.Title = PSCS.Resources.PSC3010_cshtml.Title;
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_monthyear.js"></script>
+    <script language="javascript" type="text/javascript">
+        var LangTh = false;
+
+        $(function () {
+            $('#MsgPassword').hide();
+
+            if ('@ViewBag.Lang' == 'Th') {
+                $(".datepicker").datepicker_monthyear({
+                    dateFormat: "yy-mm",
+                    showOn: "both",
+                    changeMonth: true,
+                    changeYear: true,
+                    buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                });
+
+                // first time; Yearmonth not show in thia lang mode
+                if ($("#FilterMonthlyDate").val() == "") {
+                    $("#FilterMonthlyDate").val('@ViewBag.pMonthlyDate');
+                }
+            }
+            else {
+                $(".datepicker").datepicker({
+                    dateFormat: "yy-mm",
+                    showOn: "both",
+                    changeMonth: true,
+                    changeYear: true,
+                    buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                    onClose: function (dateText, inst) {
+                        $(this).datepicker('setDate', new Date(inst.selectedYear, inst.selectedMonth, 1));
+                    }
+                });
+            }
+        });
+
+        $('#btnMonthlyClose').on('click', function () {
+            $("#btnOK").val("MonthlyClose");
+            $("#txtPassword").val("");
+            $("#MsgPassword").hide();
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnRestore').on('click', function () {
+            $("#btnOK").val("Restore");
+            $("#txtPassword").val("");
+            $("#MsgPassword").hide();
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnOK').on('click', function () {
+            var pwd = $("#txtPassword").val();
+            if (pwd == "") {
+                $("#MsgPassword").show();
+                return false;
+            }
+        });
+
+        $('#btnCancel').on('click', function () {
+            $("#itemModal").modal("hide");
+            return false;
+        });
+
+        $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });
+    </script>
+}
+ 
+<style>        
+    .ui-datepicker-calendar {      
+        display: none;       
+    }  
+</style>
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC3010_cshtml.Title</h1>
+
+@using (Html.BeginForm("PSC3010", "MonthlyClose", FormMethod.Post, new { @id = "FormPSC3010" }))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width=100%>
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                <!-- Button area -->
+                <table align="right">
+                    <tr>
+                        <th>
+                            <button type="button" id="btnMonthlyClose" class="btn btn-large btn-green" @Html.Raw(Model.IsMonthlyClose ? "" : "disabled=\"disabled\"")>@PSCS.Resources.PSC3010_cshtml.Button_MonthlyClose</button>
+                            <button type="button" id="btnRestore" class="btn btn-large btn-red" @Html.Raw(Model.IsRestore ? "" : "disabled=\"disabled\"")>@PSCS.Resources.PSC3010_cshtml.Button_Restore</button>
+                            <Button id="btnBack" type="button" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.PSC3010_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+
+        <!-- Criteria area -->
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="120px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC3010_cshtml.FilterMonthlyClose</label>
+                                    </th>
+                                    <th width="150px">
+                                        @Html.EditorFor(m => m.FilterMonthlyDate, new { htmlAttributes = new { @class = "datepicker row", @readonly = "readonly", @style = "height:25px; width:100px;" } })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="15px"></th>
+                    </tr>
+
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+    </table>
+
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.PSC3010_cshtml.Title_InputPassword
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @Html.TextBoxFor(m => m.MonthlyClosePassword, "", new { @class = "form-control", @placeholder = @PSCS.Resources.PSC3010_cshtml.Password, @type = "password", @maxlength = "16", @id = "txtPassword" })
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label id="MsgPassword" class="text-danger">@PSCS.Resources.PSC3010_cshtml.PasswordRequired</label>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <Button id="btnOK" name="submitButton" value="Ok" class="btn btn-large btn-skyblue">@PSCS.Resources.PSC3010_cshtml.Button_Ok</Button>
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.PSC3010_cshtml.Button_Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

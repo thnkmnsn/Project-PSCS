@@ -1,0 +1,203 @@
+﻿@model PSCS.ModelsScreen.ReleaseComfirmScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@{
+    ViewBag.Title = PSCS.Resources.PSC2420_cshtml.Title;
+}
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+    $(document).ready(function () {
+            var row = @Model.Total
+            console.log(row);
+            if (row > 0 && ViewBag.DisbleBtn == false) {
+                $('#btnConfirm').removeAttr('disabled', 'disabled');
+            } else {
+                $('#btnConfirm').attr('disabled', 'disabled');
+            }
+        });
+
+        $('#btnConfirm').click(function (e) {
+            e.stopPropagation();
+            $("#btnConfirmDialog").val("Confirm");
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+    </script>
+}
+
+<style>
+    #my-tb th {
+        text-align: center;
+    }
+
+    #my-tb td {
+        vertical-align: middle;
+    }
+</style>
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC2420_cshtml.Title</h1>
+
+@using (Html.BeginForm("PSC2420", "ReleaseComfirm", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width=100%>
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(
+                @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                <!-- Button area -->
+                <table align="right">
+                    <tr>
+                        <th>
+                            @if (ViewBag.DisbleBtn == true)
+                            {
+                                <Button id="btnConfirm" name="submitButton" value="Confirm" class="btn btn-large btn-primary" disabled="disabled">@PSCS.Resources.PSC2420_cshtml.Button_Confirm</Button>
+                            }
+                            else
+                            {
+                                <Button id="btnConfirm" name="submitButton" value="Confirm" class="btn btn-large btn-primary">@PSCS.Resources.PSC2420_cshtml.Button_Confirm</Button>
+                            }
+
+                        </th>
+                        <th>
+
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.PSC2420_cshtml.Button_Back</Button>
+                        </th>
+
+                    </tr>
+                    <tr>
+                        <th colspan="2" style="text-align:right;">
+                            <p>@PSCS.Resources.Common_cshtml.Total: @Html.DisplayFor(model => model.Total)  @PSCS.Resources.Common_cshtml.Item</p>
+                        </th>
+                        <th></th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="50px"></th>
+        </tr>
+
+        <!-- Body : Detail -->
+        <tr>
+            <th>
+                <div class="mvc-grid">
+                    @*akane*@
+                    <table id="my-tb" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>@PSCS.Resources.PSC2420_cshtml.GridRowNo</th>
+                                <th>@PSCS.Resources.PSC2420_cshtml.GridDate</th>
+                                <th>@PSCS.Resources.PSC2420_cshtml.GridHeatNo</th>
+                                <th>@PSCS.Resources.PSC2420_cshtml.GridDescription</th>
+                                <th>@PSCS.Resources.PSC2420_cshtml.GridMakerName</th>
+                                <th>@PSCS.Resources.PSC2420_cshtml.GridQTY</th>
+                                <th>@PSCS.Resources.PSC2420_cshtml.GridRequestNo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grid_body">
+                            @for (int i = 0; i < Model.ReleaseDetailList.Count; i++)
+                            {
+                                <tr>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReleaseDetailList[i].RowNo)
+                                        @*@Html.HiddenFor(x => Model.ReleaseDetailList[i].JobNo, new { @id = "hdnJobNo" })*@
+                                        @Html.HiddenFor(x => Model.ReleaseDetailList[i].ItemCode, new { @id = "hdnItemCode" })
+                                        @Html.HiddenFor(x => Model.ReleaseDetailList[i].HeatNo, new { @id = "hdnHeatNo" })
+                                        @*@Html.HiddenFor(x => Model.ReleaseDetailList[i].ReleaseQTY, new { @id = "hdnReleaseQTY" })*@
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReleaseDetailList[i].RequestDate)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReleaseDetailList[i].HeatNo)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReleaseDetailList[i].Description)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReleaseDetailList[i].Maker_Name)
+                                    </td>
+                                    <td class="gridtext-right">
+                                        @Html.DisplayFor(x => Model.ReleaseDetailList[i].RequestQTY)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReleaseDetailList[i].RequestNo)
+                                    </td>
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+            </th>
+        </tr>
+    </table>
+
+
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirmDialog" name="submitButton" value="Confirm" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+

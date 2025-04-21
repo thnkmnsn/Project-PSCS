@@ -1,0 +1,375 @@
+﻿@model PSCS.ModelsScreen.PipeItemDetail
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC8010_Detail_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+
+        $(function () {
+            //$(".datepicker").datepicker({
+            //    dateFormat: "yy-mm-dd",
+            //    showOn: "both",
+            //    buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+            //});
+
+            @*$('#btnBack').click(function () {
+                window.location.href = '@Url.Action("Back", "Pipe")';
+            });*@
+
+            $('.one-digits').keyup(function () {
+                if ($(this).val().indexOf('.') != -1) {
+                    if ($(this).val().split(".")[1].length > 1) {
+                        if (isNaN(parseFloat(this.value))) return;
+                        this.value = parseFloat(this.value).toFixed(1);
+                    }
+                }
+                return this;
+            });
+
+            $('.two-digits').keyup(function () {
+                if ($(this).val().indexOf('.') != -1) {
+                    if ($(this).val().split(".")[1].length > 2) {
+                        if (isNaN(parseFloat(this.value))) return;
+                        this.value = parseFloat(this.value).toFixed(2);
+                    }
+                }
+                return this;
+            });
+
+            $('.three-digits').keyup(function () {
+                if ($(this).val().indexOf('.') != -1) {
+                    if ($(this).val().split(".")[1].length > 3) {
+                        if (isNaN(parseFloat(this.value))) return;
+                        this.value = parseFloat(this.value).toFixed(3);
+                    }
+                }
+                return this;
+            });
+        });
+    </script>
+}
+
+@using (Html.BeginForm("PSC8010_Edit", "Pipe", FormMethod.Post))
+{
+    <div class="panel-heading">
+        <h1 id="itemModalLabel">@PSCS.Resources.PSC8010_Detail_cshtml.Title</h1>
+        <div class="panel-title form-group row text-right">
+            <button id="btnBack" type="button" onclick="window.history.go(-1); return false;" value="Back" class="btn btn-secondary">@PSCS.Resources.PSC8010_Detail_cshtml.Button_Back</button>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        @*<div class="panel-title form-group row text-right">
+            <button id="btnBack" type="button" value="Back" class="btn btn-secondary">@PSCS.Resources.PSC8010_Detail_cshtml.Button_Back</button>
+        </div>
+        <div height="10px"></div>*@
+        @*<div class="col-sm-7">*@
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.ItemCode</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailItemCode, new { htmlAttributes = new { @id = "pItemCode", @class = "form-control", placeholder = PSCS.Resources.PSC8010_Detail_cshtml.ItemCode, @maxlength = "32", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailItemCode, "", new { @class = "text-danger" })
+            </div>
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.HeatNo</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailHeatNo, new { htmlAttributes = new { @id = "pHeatNo", @class = "form-control", placeholder = PSCS.Resources.PSC8010_Detail_cshtml.HeatNo, @maxlength = "15", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailHeatNo, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.Description</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailDescription, new { htmlAttributes = new { @id = "pDescription", @class = "form-control", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.Description, @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailItemCode, "", new { @class = "text-danger" })
+            </div>
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.StandardName</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailStandardName, new { htmlAttributes = new { @id = "pStandardName", @class = "form-control", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.StandardName, @maxlength = "15", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailStandardName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.OD</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailOD, new { htmlAttributes = new { @id = "pOD", @class = "form-control two-digits", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.OD, @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailOD, "", new { @class = "text-danger" })
+            </div>
+            @*<label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.UnitWeight</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailUnitWeight, new { htmlAttributes = new { @id = "pUnitWeight", @class = "form-control three-digits", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.UnitWeight, @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailUnitWeight, "", new { @class = "text-danger" })
+            </div>*@
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.MaterialName</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailMaterialName, new { htmlAttributes = new { @id = "pMaterialName", @class = "form-control", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.MaterialName, @maxlength = "15", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailMaterialName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.WT</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailWT, new { htmlAttributes = new { @id = "pWT", @class = "form-control two-digits", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.WT, @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailWT, "", new { @class = "text-danger" })
+            </div>
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.GradeName</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailGradeName, new { htmlAttributes = new { @id = "pGradeName", @class = "form-control", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.GradeName, @maxlength = "15", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailGradeName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.LT</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailLT, new { htmlAttributes = new { @id = "pLT", @class = "form-control two-digits", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.LT, @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailLT, "", new { @class = "text-danger" })
+            </div>
+
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.ShapeName</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailShapeName, new { htmlAttributes = new { @id = "pShapeName", @class = "form-control", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.ShapeName, @maxlength = "15", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailShapeName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.UnitWeight</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailUnitWeight, new { htmlAttributes = new { @id = "pUnitWeight", @class = "form-control three-digits", placeholder = @PSCS.Resources.PSC8010_Detail_cshtml.UnitWeight, @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailUnitWeight, "", new { @class = "text-danger" })
+            </div>
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.MakerName</label>
+            <div class="col-sm-4">
+                @Html.EditorFor(model => model.DetailMakerName, new { htmlAttributes = new { @id = "pMakerName", @class = "form-control", placeholder = PSCS.Resources.PSC8010_Detail_cshtml.MakerName, @maxlength = "32", min = "0", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.DetailMakerName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8010_Detail_cshtml.LotAttributes </label>
+        </div>
+
+        <div width="100%">
+            <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+                <tr>
+                    <th>
+                        <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+                            <tr>
+                                <th>
+                                    <table border="1" cellSpacing="0" cellPadding="0" width="100%" bordercolor="#D8D8D8">
+                                        <tr>
+                                            <th colspan="2" width="100px">
+
+                                            </th>
+                                            <th align="center">
+                                                Yes
+                                            </th>
+                                            <th align="center">
+                                                No
+                                            </th>
+                                            <th align="center">
+                                                Un Check
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th rowspan="2">
+                                                <p>JIS</p>
+                                            </th>
+                                            <th>
+                                                PT370
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.PT370 == 1 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.PT370 == 0 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.PT370 == null ? "" : "style=display:none")></span></p>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                PG370
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.PG370 == 1 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.PG370 == 0 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.PG370 == null ? "" : "style=display:none")></span></p>
+                                            </th>
+                                        </tr>
+                                        <tr width="10px">
+                                            <th width="5px" colspan="5">
+                                                &nbsp;
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="2" width="100px">
+
+                                            </th>
+                                            <th align="center">
+                                                Yes
+                                            </th>
+                                            <th align="center">
+                                                No
+                                            </th>
+                                            <th align="center">
+                                                Un Check
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th rowspan="2">
+                                                Spec
+                                            </th>
+                                            <th>
+                                                EN Spec
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.EN_Spec == 1 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.EN_Spec == 0 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.EN_Spec == null ? "" : "style=display:none")></span></p>
+                                            </th>
+                                        </tr>
+                                        <tr>
+
+                                            <th>
+                                                Aramco
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.Aramco == 1 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.Aramco == 0 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.Aramco == null ? "" : "style=display:none")></span></p>
+                                            </th>
+                                        </tr>
+                                        <tr width="10px">
+                                            <th width="5px" colspan="5">
+                                                &nbsp;
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="2" width="100px">
+
+                                            </th>
+                                            <th align="center">
+                                                Yes
+                                            </th>
+                                            <th align="center">
+                                                No
+                                            </th>
+                                            <th align="center">
+                                                Un Check
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th rowspan="3">
+                                                Customer
+                                            </th>
+                                            <th>
+                                                Gerab (PO)
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.Gerab_PO == 1 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.Gerab_PO == 0 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.Gerab_PO == null ? "" : "style=display:none")></span></p>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                Singapore
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.Singapore == 1 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.Singapore == 0 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.Singapore == null ? "" : "style=display:none")></span></p>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                C21,SHL1
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.C21_SHL1 == 1 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.C21_SHL1 == 0 ? "" : "style=display:none")></span></p>
+                                            </th>
+                                            <th>
+                                                <p><span class="glyphicon glyphicon glyphicon-ok" @(Model.C21_SHL1 == null ? "" : "style=display:none")></span></p>
+                                            </th>
+                                        </tr>
+                                    </table>
+                                </th>
+                            </tr>
+
+                        </table>
+                        
+                    </th>
+                    <th width="5px"></th>
+                    <th  valign="top">
+                        <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+                            <tr>
+                                <th>
+                                    <table border="1" cellSpacing="0" cellPadding="0" width="100%" bordercolor="#D8D8D8">
+                                        <tr>
+                                            <th width="100px" rowspan="2" >
+                                                Chemical
+                                            </th>
+                                            <th align="center">
+                                                MN
+                                            </th>
+                                            <th align="center">
+                                                <p > @Html.DisplayFor(model => model.MN) </p>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th align="center">
+                                                C
+                                            </th>
+                                            <th align="center">
+                                                <p > @Html.DisplayFor(model => model.C) </p>
+                                            </th>
+                                        </tr>
+                                    </table>
+                                </th>
+                            </tr>
+                        </table>
+                    </th>
+                </tr>
+            </table>
+        </div>
+        
+
+        @*</div>*@
+    </div>
+}

@@ -1,0 +1,532 @@
+﻿
+@{
+    ViewBag.Title = PSCS.Resources.PSC0100_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<html>
+<head>
+    
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/Content/ResponsibleMenu.css" rel="stylesheet">
+    <title>Menu</title>
+
+    @*Master menu*@
+    <style>
+        table.master_menu {
+            border: 0;
+            width: 100%;
+            background-color: #2D2D30;
+        }
+    </style>
+
+    @*Operating icon*@
+    <style>
+        table.operating_icon {
+            table-layout: fixed;
+            border: 0;
+            width: 100%;
+        }
+    </style>
+
+    @*Master Title*@
+    <style>
+        div.Title_master {
+            margin: 0px;
+            border: 0px;
+            float: left;
+            width: 100%;
+            height: 40px;
+            background-color: #2D2D30;
+        }
+
+        div.Title {
+            font-family: Tahoma;
+            /*font-size: 25px;*/
+            color: #FFFFFF;
+            text-align: left;
+            padding: 5px;
+        }
+    </style>
+
+    @*Master Item*@
+    <style>
+        div.Item_master {
+            margin: 0px;
+            border: 0px;
+            float: left;
+            width: 100%;
+            height: 51px;
+            background-color: #2D2D30;
+        }
+
+            div.Item_master:hover {
+                background-color: #4D4D4D;
+                border: 0px;
+            }
+
+            /*div.Item_master img {
+                padding: 5px;
+                width: 100%;
+                height: auto;
+            }*/
+
+        div.Item {
+            font-family: Tahoma;
+            /*font-size: 14px;*/
+            color: #FFFFFF;
+            text-align: left;
+            padding: 5px;
+            /*top:5px;*/
+            /*bottom: 0px;*/
+            /*height: 20px;*/
+        }
+    </style>
+
+    @*Opetating Icon*@
+    <style>
+        div.OperatinIcon {
+            margin: 5px;
+            border: 0px;
+            float: left;
+            width: 100%;
+            height: 130px;
+            background-color: #0078D7;
+        }
+
+            div.OperatinIcon:hover {
+                /*border: 1px solid #777;*/
+                background-color: #00A2E8;
+            }
+
+            /*div.OperatinIcon img {
+                padding: 5px;
+                width: 80px;
+                height: 80px;
+                height: auto;
+            }*/
+        div.OperationNormalIcon {
+            margin: 5px;
+            border: 0px;
+            float: left;
+            width: 100%;
+            height: 130px;
+            background-color: #0078D7;
+        }
+            div.OperationNormalIcon img {
+                padding: 5px;
+                width: 80px;
+                height: 80px;
+                height: auto;
+            }
+
+        div.OperatinIcon50Percent {
+            margin: 5px;
+            border: 0px;
+            float: left;
+            width: 50%;
+            height: 100px;
+            background-color: #0078D7;
+        }
+
+            div.OperatinIcon50Percent:hover {
+                /*border: 1px solid #777;*/
+                background-color: #00A2E8;
+            }
+
+            div.OperatinIcon50Percent img {
+                padding: 5px;
+                width: 80px;
+                height: 80px;
+                height: auto;
+            }
+
+
+        div.MenuName {
+            font-family: Tahoma;
+            /*font-size: 25px;*/
+            color: #FFFFFF;
+            text-align: left;
+            padding: 5px;
+            bottom: 0px;
+            height: 30px;
+        }
+
+        div.MenuDesc {
+            font-family: Tahoma;
+            /*font-size: 15px;*/
+            color: #FFFFFF;
+            text-align: left;
+            padding: 0px;
+            top: 0px;
+            margin: 0px;
+            height: 23px;
+            width: 100%;
+        }
+
+            div.MenuDesc:hover {
+                /*border: 1px solid #777;*/
+                background-color: #00A2E8;
+            }
+
+        /*td.img {
+            width: 80px;
+        }*/
+    </style>
+
+    <style>
+        /* Refer from https://qiita.com/Shinji-m/items/69a392685699f3ba95fb */
+        div.Flexiblebox {
+            display: -webkit-flex;
+            display: flex;
+            word-break: break-word;
+            -webkit-align-items: center; /* 縦方向中央揃え（Safari用） */
+            align-items: center; /* 縦方向中央揃え */
+            /*-webkit-justify-content: center;*/ /* 横方向中央揃え（Safari用） */
+            /*justify-content: center;*/ /* 横方向中央揃え */
+        }
+    </style>
+    
+    <script>
+        function getscreenresolution() {
+            window.alert("Your screen resolution is: " + screen.height + 'x' + screen.width);
+        }
+
+        function ReceiveMenu(pLevel) {
+            switch (pLevel) {
+                case 3: /*Controller*/
+                    window.location.href = '@Url.Action("PSC2110", "ReceivedPlan")';
+                    break;
+                case 5: /*Yard Suppervisor*/
+                    window.location.href = '@Url.Action("PSC2110", "ReceivePlan")';
+                    break;
+            }
+        }
+
+        function ReleaseMenu(pLevel) {
+            switch (pLevel) {
+                case 3:
+                    window.location.href = '@Url.Action("PSC2414", "ReleaseEdit")';
+                    break;
+                case 2:
+                    window.location.href = '@Url.Action("PSC2412", "ReleaseApprove")';
+                    break;
+                case 4:
+                    window.location.href = '@Url.Action("PSC2410", "Release")';
+                    break;
+                case 5:
+                    //window.location.href = '@Url.Action("PSC2411", "ReleaseDailyPipe")';
+                    window.location.href = '@Url.Action("PSC2411", "ReleaseSelectLocation")';
+                    break;
+
+            }
+        }
+
+        function StockCheckMenu(pLevel) {
+            switch (pLevel) {
+                case 2: /*Manager*/
+                    window.location.href = '@Url.Action("PSC2310_Adjust", "StockCheck")';
+                    break;
+                case 3: /*Controller*/
+                    window.location.href = '@Url.Action("PSC2310", "StockCheck")';
+                    break;
+                case 5: /*Yard Suppervisor*/
+                    window.location.href = '@Url.Action("PSC2310_SuperVisor", "StockCheck")';
+                    break;
+                case 10: /*Controller*/
+                    window.location.href = '@Url.Action("PSC2310", "StockCheckPlan")';
+                    break;
+            }
+        }
+    </script>
+</head>
+<body>
+    <table border="0" cellPadding="0" width="100%">
+        <tr>
+            @if (ViewBag.ShowMaster == true)
+            {
+                <th width="25%" height="50%">
+                    <table class="master_menu">
+                        <tr>
+                            <th>
+                                <div class="Title_master">
+                                    <table border="0" cellSpacing="0">
+                                        <tr>
+                                            <td><div class="Title TitleFont">@PSCS.Resources.PSC0100_cshtml.Master</div></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>
+                                <a href="@Url.Action("PSC3100", "GetNewPipe")">
+                                    <div class="Item_master">
+                                        <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                            <tr>
+                                                <td class="MasterMenuImg"><img src="~/Image/GetNewPipeW.png"></td>
+                                                <td><div class="Item ItemFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.GetNewPipe</div></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </a>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>
+                                <a href="@Url.Action("PSC8010", "Pipe")">
+                                    <div class="Item_master">
+                                        <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                            <tr>
+                                                <td class="MasterMenuImg"><img src="~/Image/PipeItemW.png"></td>
+                                                <td><div class="Item ItemFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.PipeItem</div></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </a>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>
+                                <a href="@Url.Action("PSC8020", "Location")">
+                                    <div class="Item_master">
+                                        <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                            <tr>
+                                                <td class="MasterMenuImg"><img src="~/Image/LocationW.png"></td>
+                                                <td><div class="Item ItemFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.Location</div></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </a>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>
+                                <a href="@Url.Action("PSC8030", "User")">
+                                    <div class="Item_master">
+                                        <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                            <tr>
+                                                <td class="MasterMenuImg"><img src="~/Image/UserW.png"></td>
+                                                <td><div class="Item ItemFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.User</div></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </a>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>
+                                <a href="@Url.Action("PSC8040", "Role")">
+                                    <div class="Item_master">
+                                        <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                            <tr>
+                                                <td class="MasterMenuImg"><img src="~/Image/UserLevelW.png"></td>
+                                                <td><div class="Item ItemFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.UserRole</div></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </a>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>
+                                <a href="@Url.Action("PSC3010", "MonthlyClose")">
+                                    <div class="Item_master">
+                                        <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                            <tr>
+                                                <td class="MasterMenuImg"><img src="~/Image/MonthlyCloseW.png"></td>
+                                                <td><div class="Item ItemFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.MonthlyClose</div></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </a>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>
+                                <a href="@Url.Action("PSC2510", "Print")">
+                                    <div class="Item_master">
+                                        <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                            <tr>
+                                                <td class="MasterMenuImg"><img src="~/Image/LabelIssueW.png"></td>
+                                                <td><div class="Item ItemFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.LabelIssue</div></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </a>
+                            </th>
+                        </tr>
+                    </table>
+                </th>
+            }
+
+            <th width="75%">
+                <table class="operating_icon">
+                    <tr>
+                        <th colspan="2">
+                            <a href="@Url.Action("PSC2010", "StockList")">
+                                <div class="OperatinIcon">
+                                    <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                        <tr>
+                                            <td rowspan="2" class="OperationMenuImg"><img src="~/Image/PipeStockW.png"></td>
+                                            <td rowspan="2"><div class="MenuName MenuNameFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.StockList</div></td>
+                                        </tr>
+                                        <tr>
+                                            @*<td><div class="MenuDesc">Stock list</div></td>*@
+                                        </tr>
+                                    </table>
+                                </div>
+                            </a>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            @if (ViewBag.RoleID == 1)
+                            {
+                                <div class="OperationNormalIcon" onclick="ReceiveMenu(@ViewBag.RoleID);">
+                                    <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                        <tr>
+                                            <td class="OperationMenuImg"><img src="~/Image/ReceiveW.png"></td>
+                                            <td>
+                                                <div class="MenuName MenuNameLongFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.Receive</div>
+                                                @if (ViewBag.RoleID == 1)
+                                                {
+                                                    <span style="cursor:pointer">
+                                                        <div class="MenuDesc MenuDescFont" onclick="ReceiveMenu(5);">@PSCS.Resources.PSC0100_cshtml.ReceiveSuppervisor</div>
+                                                    </span>
+                                                    <span style="cursor:pointer">
+                                                        <div class="MenuDesc MenuDescFont" onclick="ReceiveMenu(3);">@PSCS.Resources.PSC0100_cshtml.ReceiveController</div>
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("PSC2110", "ReceivePlan")">
+                                    <div class="OperatinIcon">
+                                        <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                            <tr>
+                                                <td rowspan="2" class="OperationMenuImg"><img src="~/Image/ReceiveW.png"></td>
+                                                <td rowspan="2"><div class="MenuName MenuNameFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.Receive</div></td>
+                                            </tr>
+                                            <tr>
+                                                @*<td><div class="MenuDesc">Stock list</div></td>*@
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </a>
+                            }
+                        </th>
+                        <th>
+                            @if (ViewBag.RoleID == 1)
+                            {
+                                <div class="OperationNormalIcon" onclick="ReleaseMenu(@ViewBag.RoleID);">
+                                    <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                        <tr>
+                                            <td class="OperationMenuImg"><img src="~/Image/ReleaseW.png"></td>
+                                            <td>
+                                                <div class="MenuName MenuNameFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.Release</div>
+                                                @if (ViewBag.RoleID == 1)
+                                                {
+                                                    <span style="cursor:pointer">
+                                                        <div class="MenuDesc MenuDescFont" onclick="ReleaseMenu(4);">@PSCS.Resources.PSC0100_cshtml.ReleaseRequest</div>
+                                                    </span>
+                                                    <span style="cursor:pointer">
+                                                        <div class="MenuDesc MenuDescFont" onclick="ReleaseMenu(5);">@PSCS.Resources.PSC0100_cshtml.ReleaseDailyPipe</div>
+                                                    </span>
+                                                    <span style="cursor:pointer">
+                                                        <div class="MenuDesc MenuDescFont" onclick="ReleaseMenu(2);">@PSCS.Resources.PSC0100_cshtml.ReleaseManagerApprove</div>
+                                                    </span>
+                                                    <span style="cursor:pointer">
+                                                        <div class="MenuDesc MenuDescFont" onclick="ReleaseMenu(3);">@PSCS.Resources.PSC0100_cshtml.ReleaseRequestEdit</div>
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="OperatinIcon" onclick="ReleaseMenu(@ViewBag.RoleID);">
+                                    <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                        <tr>
+                                            <td class="OperationMenuImg"><img src="~/Image/ReleaseW.png"></td>
+                                            <td>
+                                                <div class="MenuName MenuNameFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.Release</div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            }
+                            
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <a href="@Url.Action("PSC2210", "Movement")">
+                                <div class="OperatinIcon">
+                                    <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                        <tr>
+                                            <td class="OperationMenuImg"><img src="~/Image/MoveLocationW.png"></td>
+                                            <td><div class="MenuName MenuNameFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.MoveLocation</div></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </a>
+                        </th>
+                        <th>
+                            @if (ViewBag.RoleID == 1) 
+                            {
+                                <div class="OperationNormalIcon" onclick="StockCheckMenu(@ViewBag.RoleID);">
+                                    <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                        <tr>
+                                            <td class="OperationMenuImg"><img src="~/Image/StockCheckW.png"></td>
+                                            <td>
+                                                <div class="MenuName MenuNameLongFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.StockCheck</div>
+                                                @if (ViewBag.RoleID == 1)
+                                                {
+                                                    <span style="cursor:pointer">
+                                                        <div class="MenuDesc MenuDescFont" onclick="StockCheckMenu(3);">@PSCS.Resources.PSC0100_cshtml.StockCheckCreatePlan</div>
+                                                    </span>
+                                                    <span style="cursor:pointer">
+                                                        <div class="MenuDesc MenuDescFont" onclick="StockCheckMenu(5);">@PSCS.Resources.PSC0100_cshtml.StockCheckSuppervisor</div>
+                                                    </span>
+                                                    <span style="cursor:pointer">
+                                                        <div class="MenuDesc MenuDescFont" onclick="StockCheckMenu(2);">@PSCS.Resources.PSC0100_cshtml.StockCheckManager</div>
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="OperatinIcon" onclick="StockCheckMenu(@ViewBag.RoleID);">
+                                    <table border="0" cellSpacing="0" cellPadding="0" width="100%" height="100%">
+                                        <tr>
+                                            <td class="OperationMenuImg"><img src="~/Image/StockCheckW.png"></td>
+                                            <td>
+                                                <div class="MenuName MenuNameFont Flexiblebox">@PSCS.Resources.PSC0100_cshtml.StockCheck</div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            }
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        
+    </table>
+    
+</body>
+</html>

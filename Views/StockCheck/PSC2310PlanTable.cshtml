@@ -1,0 +1,28 @@
+﻿@model  IEnumerable<PSCS.Models.StockCheck>
+
+@* Should only include grid declaration *@
+
+@(Html
+    .Grid(Model)
+    .Build(columns =>
+    {
+        columns.Add(model => "<input type=\"checkbox\" name=\"rowNo\" value=\"" + model.RowNo + "\" />")
+                                .Titled(Html.CheckBox("CheckAll")).Encoded(false).Css("action");
+        columns.Add(model => model.RowNo).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_RowNo).Css("gridtext-center");
+        columns.Add(model => model.StockCheckDate).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_CheckDate).Formatted("{0:yyyy-MM-dd}").Css("gridtext-center");
+        columns.Add(model => model.YardName).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_Yard).Css("gridtext-center");
+        columns.Add(model => model.LocationName).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_Location).Css("gridtext-center");
+        columns.Add(model => model.HeatNo).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_HeatNo).Css("gridtext-center");
+        columns.Add(model => model.Description).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_Description).Css("gridtext-center");
+        columns.Add(model => model.Qty).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_Qty).Css("gridtext-right");
+        columns.Add(model => model.ActualQty).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_ActualQty).Css("gridtext-right");
+        columns.Add(model => model.Status).AppendCss("hide");
+        columns.Add(model => model.StatusText).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_Status).Css("gridtext-center");
+        columns.Add(model => model.Remark).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_Remark).Css("gridtext-center");
+    })
+    .Id("GridPlan")
+    .Attributed(new { id = "plan-tb" })
+    .Css("table-hover")
+    .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+    .Sortable()
+)

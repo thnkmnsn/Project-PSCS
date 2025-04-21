@@ -1,0 +1,22 @@
+﻿@model  PSCS.ModelsScreen.StockListPatialScreen
+
+@{
+    ViewBag.Title = "_PSC2010Partial";
+}
+
+<div>
+    @(Html
+                        .Grid(Model.DataList)
+                        .Build(columns =>
+                        {
+                            columns.Add(model => model.RowNo).Titled(@PSCS.Resources.PSC2010_cshtml.GridRowNo).Css("gridtext-center");
+                            columns.Add(model => model.Date).Titled(@PSCS.Resources.PSC2010_cshtml.GridDate).Formatted("{0:dd-MM-yyyy}");
+                            columns.Add(model => model.Type).Titled(@PSCS.Resources.PSC2010_cshtml.GridType);
+                            columns.Add(model => model.Qty).Formatted("{0:#,##0}").Titled(@PSCS.Resources.PSC2010_cshtml.GridQty).Css("gridtext-right");
+                        })
+                        .Css("table-hover")
+                        .Empty(@PSCS.Resources.Common_cshtml.NoDataFound)
+                        .Sortable()
+    )
+</div>
+

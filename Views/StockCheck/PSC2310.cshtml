@@ -1,0 +1,714 @@
+﻿@model PSCS.ModelsScreen.StockCheckScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@{
+    ViewBag.Title = PSCS.Resources.PSC2310_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_thai_min.js"></script>
+    <script src="~/Scripts/SessionTimeout.js"></script>
+    <script language="javascript" type="text/javascript">
+        var pRowNo = "";
+        var overflow = false;
+        var LangTh = false;
+        var sta = @Html.Raw(Json.Encode(Model.StatusList));
+
+        $(function () {
+           if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true
+            }
+            else {
+                LangTh = false
+            }
+
+            $(".datepicker").datepicker_thai({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                langTh: LangTh,
+                yearTh: LangTh,
+            });
+
+            UpdateTotal();
+        });
+
+        $('#btnSave').on('click', function () {
+            $("#btnConfirm").val("Save");
+            $("#btnConfirm").removeAttr("type");
+            $("#btnConfirm").removeAttr("onclick");
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnDelete').on('click', function () {
+            $("#btnConfirm").attr('onclick', 'Delete();');
+            $("#btnConfirm").attr('type','button');
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        //$('#btnSave_Modal').on('click', function () {
+        //    $(this).submit();
+        //});
+
+        // Parent View: Delete click delete row in grid
+        function Delete(){
+            $("#itemModal").modal('hide');
+            var _id = $('#DeletedSelected').val();
+            $.ajax({
+                url: "/StockCheck/Delete_StockCheckList/",
+                type: "POST",
+                dataType: "JSON",
+                data: { Selected: _id },
+                success: function (response) {
+                    SessionTimeoutCheck("StockCheck");
+
+                    // refresh Total
+                    UpdateTotal();
+
+                    // refresh Grid
+                    new MvcGrid(document.querySelector('#GridPlan')).reload();
+
+                    $('#DeletedSelected').val("");
+                },
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+                    $('#divID').addClass("show alert alert-danger");
+                    $('#strongId').text("@PSCS.Resources.Common_cshtml.Error");
+                    $('#lblId').text(customErrorMessage);
+                },
+                complete: function (xhr, status) {
+                    console.log("ok");
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+            location.reload(true);
+        }
+
+
+        //////////////////////////////// Parent View /////////////////////////////////////
+        function InitialView() {
+            $('#divID').removeClass().addClass("hide");
+            $('#strongId').text("");
+            $('#lblId').text("");
+        }
+
+        @*// Parent view: Filter click
+        $(document).on("click", "#btnFilter", function (e) {
+            if ($('#ddlStatus').val() == 4) {
+                window.location.href = '@Url.Action("PSC2310", "StockCheck")';
+            }
+            else
+            {
+                SessionTimeoutCheck("StockCheck");
+
+                var grid = new MvcGrid(document.querySelector('#GridPlan'));
+
+                // refresh Grid
+                grid.query.set('pDate', $('#FilterStockDate').val());
+                grid.query.set('pPipeYard', $('#ddlPipeYard').val());
+                grid.query.set('pStatus', $('#ddlStatus').val());
+                grid.reload();
+
+                // refresh Total
+                UpdateTotal();
+
+                InitialView();
+            }
+        });*@
+
+        // Parent View: Add click open Modal
+        $('#btnAdd').click(function () {
+            InitialModal();
+            $('#myModal').modal('show');
+        });
+
+        // Parent View: Grid click delete selected
+        var indexforEdit = -1;
+        $(document).on("rowclick", '#GridPlan.mvc-grid tr', function (e) {
+            var id = $(e.target).closest('tr').find('td:nth-child(1)').text();
+
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+                //$('#DeletedSelected').val("");
+                pId = "";
+            }
+            else {
+                $('.mvc-grid tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+                //$('#DeletedSelected').val(id);
+                indexforEdit = $(this).index();
+                pId = id;
+            }
+
+        });
+
+        // Parent View: Click background cancel selected row
+        $(document).on("click", 'html', function (e) {
+            $('#plan-tb>tbody').find('tr').eq(indexforEdit).removeClass('selected');
+            //$('#btnDelete').attr('disabled', 'disabled');
+            //$('#DeletedSelected').val("");
+            pId = "";
+        });
+
+        $(document).on("click", '#GridPlan.mvc-grid th', function (e) {
+            e.stopPropagation();
+        });
+
+        $(document).on("click", '#GridPlan.mvc-grid tr', function (e) {
+            e.stopPropagation();
+        });
+
+        // Parent view: Dropdown list change
+        $(document).on("change", "#ddlStatus", function (e) {
+            var Status = $('#ddlStatus').val();
+        });
+
+
+        ///////////////////////////////////// Patial View /////////////////////////////////////
+        function InitialModal() {
+            SessionTimeoutCheck("StockCheck");
+
+            // Clear check box
+            $('input[type=checkbox]', ".mvc-grid tr").each(function () {
+                $(this).prop("checked", false);
+            });
+
+            $('#DeletedSelected').val("");
+
+            // Change ddl yard same val in parent view
+            $('#ddlYard').val($('#ddlPipeYard').val());
+            LoadDropdownLocation($('#ddlYard').val());
+
+            // Filter withe yard first time
+            var grid = new MvcGrid(document.querySelector('#GridStock'));
+            grid.query.set('pYard', $('#ddlYard').val());
+            grid.reload();
+        }
+
+        // Patial view: Filter click
+        $(document).on("click", "#btnFilterP", function (e) {
+            SessionTimeoutCheck("StockCheck");
+
+            var grid = new MvcGrid(document.querySelector('#GridStock'));
+
+            grid.query.set('pYard', $('#ddlYard').val());
+            grid.query.set('pLocation', $('#ddlLoc').val());
+            grid.query.set('pHreatNo', $('#FilterHeatNo').val());
+            grid.query.set('pDesc', $('#FilterDescription').val());
+            grid.reload();
+        });
+
+         // Patial view: Ok click
+        $(document).on("click", "#btnOk", function (e) {
+            var _id = $('#Selected').val();
+
+          $.ajax({
+                url: "/StockCheck/Add_ParentGrid/",
+                type: "POST",
+                dataType: "JSON",
+                data: { Selected: _id },
+                success: function (response) {
+                    SessionTimeoutCheck("StockCheck");
+
+                    $('#myModal').modal('hide');
+
+                    // refresh Grid
+                    var grid = new MvcGrid(document.querySelector('#GridPlan'));
+                    grid.query.set('pDate', $('#FilterStockDate').val());
+                    grid.query.set('pPipeYard', $('#ddlPipeYard').val());
+                    grid.query.set('pStatus', $('#ddlStatus').val());
+                    grid.reload();
+
+                     // refresh Total
+                    UpdateTotal();
+
+                    //PostPage();
+                },
+                complete: function (xhr, status) {
+                    //IsLogonRequired(xhr.responseText);
+                }
+            });
+            location.reload(true);
+        });
+
+        // Parent view: Grid click
+        $(document).on("click", '#plan-tb tr', function (e) {
+            var arrDel = $('input[type=checkbox]:checked', "#plan-tb tr").map(function () {
+                return $(this).val();
+            }).get();
+
+            $('#DeletedSelected').val(arrDel);
+            AdjustCheckAllbtn();
+        });
+
+        // Patial view: Grid click
+        $(document).on("click", '#part-tb tr', function (e) {
+            var arr = $('input[type=checkbox]:checked', "#part-tb tr").map(function () {
+                return $(this).val();
+            }).get();
+
+            $('#Selected').val(arr);
+            AdjustCheckAllbtn();
+        });
+
+        // Patial view: Checkbox All click
+        $(document).on("click", "#CheckAll", function (e) {
+            var chk = $(this).is(':checked');
+            $('input[type=checkbox]', ".mvc-grid tr").each(function () {
+                if (chk) {
+                    $(this).prop('checked', true);
+                }
+                else {
+                    $(this).prop("checked", false);
+                }
+            });
+
+            $('#btnDelete').removeAttr('disabled');
+
+            var arr = $('input[type=checkbox]:checked', "#plan-tb tr").map(function () {
+                return $(this).val();
+            }).get();
+
+            $('#DeletedSelected').val(arr);
+        });
+
+
+        // Patial view: Dropdown list change
+        $(document).on("change", "#ddlYard", function (e) {
+            var _id = $('#ddlYard').val();
+            LoadDropdownLocation(_id);
+        });
+
+        function LoadDropdownLocation(yardId) {
+            $.ajax({
+                url: "/StockCheck/ddlChangeYard/",
+                type: "GET",
+                dataType: "JSON",
+                data: { Yard: yardId },
+                success: function (response) {
+                    $("#ddlLoc").html("");
+
+                    $("#ddlLoc").append($('<option></option>')
+                        .val('').html('@PSCS.Resources.Common_cshtml.All'));
+
+                    $.each(response, function (index, value) {
+                        $("#ddlLoc").append(
+                            $('<option></option>').val(value.LocationID).html(value.Name)
+                        );
+                    });
+
+                    $('#ddlLoc').prop('selectedIndex', 0);
+                },
+                error: function (reponse) {
+                    //alert("error : " + reponse);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+         function UpdateTotal() {
+            $.ajax({
+                url: "/StockCheck/UpdateTotal/",
+                type: "GET",
+                dataType: "JSON",
+                data: { },
+                success: function (response) {
+                    setTimeout(function () {
+                        $("#Totalitem").text(response);
+                    }, 50);
+                },
+                error: function (reponse) {
+                    //alert("error : " + reponse);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        function PostPage() {
+            $.ajax({
+                url: "/StockCheck/PSC2310/",
+                type: "POST",
+                dataType: "JSON",
+                data: {},
+                success: function (response) {
+                    //setTimeout(function () {
+                    //    $("#Totalitem").text(response);
+                    //}, 50);
+                },
+                error: function (reponse) {
+                    //alert("error : " + reponse);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        function AdjustCheckAllbtn() {
+            var check = true;
+            $('input[type=checkbox]', ".mvc-grid tr").map(function () {
+                if (!$(this).is(':checked') && $(this).val() != 'true') {
+                    check = false;
+                    return check;
+                }
+            });
+
+            $('#CheckAll', ".mvc-grid th").prop('checked', check);
+
+            if ($('#DeletedSelected').val() == "") {
+                $('#btnDelete').attr('disabled', 'disabled');
+            }
+            else {
+                $('#btnDelete').removeAttr('disabled');
+            }
+        }
+
+        function AdjustApprovebtn() {
+            var rowsCount = $('#plan-tb tbody tr').length;
+            var isNeed = false;
+            var staVal;
+
+            for (i = 0; i < rowsCount; i++) {
+                staVal = $('#plan-tb>tbody').find('tr').eq(i).find("#StatusTxt").val();
+
+                if (staVal != "1") {
+                    isNeed = true;
+                    break;
+                }
+            }
+
+            $('#btnApprove').prop('disabled', isNeed);
+        }
+
+        $(document).ready(function () {
+            var row = @Model.Total
+            console.log(row);
+            if (row > 0) {
+                $('#btnSave').removeAttr('disabled', 'disabled');
+            } else {
+                $('#btnSave').attr('disabled', 'disabled');
+            }
+        });
+
+        @*$('#btnBack').click(function () {
+            //console.log("Selected");
+            //console.log($('#Selected').val());
+            //console.log("DeletedSelected");
+            //console.log($('#DeletedSelected').val());
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });*@
+    </script>
+}
+
+<style>
+    .edit-mode {
+        width: 90px;
+    }
+
+    .selected {
+        background-color: #B0BED9;
+    }
+
+    .table-hover > tbody > tr:hover.selected > td,
+    .table-hover > tbody > tr:hover.selected > th {
+        background-color: #aab7d1;
+    }
+</style>
+
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC2310_cshtml.Title</h1>
+@using (Html.BeginForm("PSC2310", "StockCheck", FormMethod.Post, new { id = "Requestform" }))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div id="divID" class="details @(
+@Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+@Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+@Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+@Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+@Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")">
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+
+                    <strong id="strongId"> </strong>
+                    <label id="lblId" calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Button Area  -->
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <Button id="btnSave" name="submitButton" value="Save" class="btn btn-large btn-green plan-mode">@PSCS.Resources.PSC2310_cshtml.Button_Save</Button>
+                            <Button id="btnClearFilter" name="submitButton" value="ClearFilter" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_ClearFilter</Button>
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <p>@PSCS.Resources.Common_cshtml.Total: <label id="Totalitem">@ViewBag.Total</label> @PSCS.Resources.Common_cshtml.Item</p>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+
+        <!-- Criteria area -->
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- Stock Check Date -->
+                                    <th width="140px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_StockCheckDate</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.EditorFor(m => m.FilterStockDate, new { htmlAttributes = new { @class = "datepicker row", @readonly = "readonly" } })
+                                    </th>
+
+                                    <!-- Yard -->
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_Yard</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.FilterPipeYard, Model.PipeYardList, @PSCS.Resources.Common_cshtml.All, (object)new { @id = "ddlPipeYard", @style = "height:25px; width:120px;" })
+                                    </th>
+
+                                    <!-- Status -->
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filtter_Status</label>
+                                    </th>
+                                    <th width="150px">
+                                        @Html.DropDownListFor(m => m.FilterStatus, Model.StatusList, @PSCS.Resources.Common_cshtml.All, (object)new { @id = "ddlStatus", @style = "height:25px; width:140px;" })
+                                    </th>
+
+                                    <!-- Button -->
+                                    <th width="140px">
+                                       @* <Button id="btnFilter" type="button" value="Filter" class="btn btn-primary btn-large">@PSCS.Resources.PSC2310_cshtml.Button_Filter</Button>*@
+                                        <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large">@PSCS.Resources.PSC2310_cshtml.Button_Filter</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+
+        <!-- Button Area  -->
+        <tr>
+            <th>
+                <table align="left">
+                    <tr>
+                        <th>
+                            <Button id="btnAdd" type="button" name="submitButton" value="Add" class="btn btn-large btn-skyblue">@PSCS.Resources.PSC2310_cshtml.Button_Add</Button>
+                            <Button id="btnDelete" type="button" value="Delete" class="btn btn-large btn-red" disabled="disabled">@PSCS.Resources.PSC2310_cshtml.Button_Delete</Button>
+                            @Html.Hidden("DeletedSelected")
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+
+        <!--Grid Area -->
+        <tr>
+            <th>
+                @Html.AjaxGrid(Url.Action("PSC2310PlanTable"), new { id = "GridPlan" })
+            </th>
+        </tr>
+    </table>
+    <!--Confirm dialog-->
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirm" type="button" name="submitButton" value="Confirm" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal Area  -->
+<div class="modal fade" tabindex="-1" id="myModal" role="dialog">
+    <div class="modal-dialog" role="document" style="width: 690px;">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title">@PSCS.Resources.PSC2310_cshtml.ModalTitle</h2>
+            </div>
+
+            <!-- PartialView -->
+            <div class="modal-body" id="dialog" role="dialog">
+                <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+                    <!-- Button area -->
+                    <tr>
+                        <th>
+                            <table align="right">
+                                <tr>
+                                    <th>
+                                        <Button id="btnOk" type="button" value="Ok" class="btn btn-large btn-skyblue">@PSCS.Resources.Common_cshtml.Ok</Button>
+                                        <Button id="btnCancel" type="button" data-dismiss="modal" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Cancel</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="15px"></th>
+                    </tr>
+
+                    <!-- Criteria area -->
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+                                <tr>
+                                    <th>
+                                        <table border="0" cellSpacing="0" cellPadding="0">
+                                            <tr>
+                                                @Html.Hidden("Selected")
+
+                                                <!-- Pipe yard -->
+                                                <th width="70px">
+                                                    <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_Yard</label>
+                                                </th>
+                                                <th width="160px">
+                                                    @Html.DropDownListFor(m => m.FilterYard, Model.YardList, @PSCS.Resources.Common_cshtml.All, new { @id = "ddlYard", @style = "height:25px; width:140px;" })
+                                                </th>
+
+                                                <!-- Location -->
+                                                <th width="90px">
+                                                    <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_Location</label>
+                                                </th>
+                                                <th width="160px">
+                                                    @Html.DropDownListFor(m => m.FilterLocation, Model.LocationList, @PSCS.Resources.Common_cshtml.All, new { @id = "ddlLoc", @style = "height:25px; width:140px;" })
+                                                </th>
+                                            </tr>
+                                        </table>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th height="5px"></th>
+                                </tr>
+
+                                <tr>
+                                    <th>
+                                        <table border="0" cellSpacing="0" cellPadding="0">
+                                            <tr>
+                                                <!-- Heat no. -->
+                                                <th width="70px">
+                                                    <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_HeatNo</label>
+                                                </th>
+                                                <th width="160px">
+                                                    @Html.EditorFor(m => m.FilterHeatNo, new { htmlAttributes = new { @style = "height:25px; width:120px;" } })
+                                                </th>
+
+                                                <!-- Description -->
+                                                <th width="90px">
+                                                    <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_Description</label>
+                                                </th>
+                                                <th width="160px">
+                                                    @Html.EditorFor(m => m.FilterDescription, new { htmlAttributes = new { @style = "height:25px; width:120px;" } })
+                                                </th>
+
+                                                <!-- Button -->
+                                                <th width="140px">
+                                                    <Button id="btnFilterP" type="button" value="Filter" class="btn btn-primary btn-large">@PSCS.Resources.PSC2310_cshtml.Button_Filter</Button>
+                                                </th>
+                                            </tr>
+                                        </table>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="10px"></th>
+                    </tr>
+
+                    <!-- Body : Detail -->
+                    <tr>
+                        <th>
+                            <div>
+                                @Html.AjaxGrid(Url.Action("PSC2310PartialTable"), new { id = "GridStock" })
+
+                            </div>
+                        </th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

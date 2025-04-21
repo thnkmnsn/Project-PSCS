@@ -1,0 +1,22 @@
+﻿@model  PSCS.Models.ReceivePlanPatialScreen
+
+@{
+    ViewBag.Title = "_Psc2111Patial";
+}
+
+<div class="panel-body">
+    @(Html
+        .Grid(Model.ReceivePlanPatialList)
+        .Build(columns =>
+        {
+            columns.Add(model => model.RowNo).Titled("Row No.").Css("gridtext-center");
+            columns.Add(model => model.ItemCode).Titled("Item Code");
+            columns.Add(model => model.HeatNo).Titled("Heat No");
+            columns.Add(model => model.ContainerNo).Titled("Location");
+            columns.Add(model => model.Qty).Formatted("{0:#,##0}").Titled("Q'ty").Css("gridtext-right");
+        })
+        .Css("table-hover")
+        .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+        .Sortable()
+    )
+</div>

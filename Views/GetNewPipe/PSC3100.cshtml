@@ -1,0 +1,67 @@
+﻿@model PSCS.ModelERPDEV01.GetNewPipeScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@{
+    ViewBag.Title = PSCS.Resources.PSC3100_cshtml.GetPipeTitle;
+}
+
+@section scripts{
+    <script language="javascript" type="text/javascript">
+           $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });
+    </script>
+}
+
+<h1 class="H1">@PSCS.Resources.PSC3100_cshtml.GetPipeTitle</h1>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@PSCS.Resources.PSC3100_cshtml.GetPipeTitle</title>
+</head>
+<body>
+    @using (Html.BeginForm("PSC3100", "GetNewPipe", FormMethod.Post))
+    {
+        <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+            <tr>
+                <td>
+                    <div class="details @(@Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                        {<strong>@PSCS.Resources.Common_cshtml.Success</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                        {<strong>@PSCS.Resources.Common_cshtml.Information</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                        {<strong>@PSCS.Resources.Common_cshtml.Warning</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                        {<strong>@PSCS.Resources.Common_cshtml.Error</strong>}
+                        <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <table align="right">
+                        <tr>
+                            <th>
+                                <Button id="btnSync" name="submitButton" value="Sync" class="btn btn-primary btn-large">@PSCS.Resources.PSC3100_cshtml.Button_Import</Button>
+                                <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                            </th>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+            <tr>
+                <th height="10px"></th>
+            </tr>
+        </table>
+    }
+    <table></table>
+
+
+</body>
+</html>
+

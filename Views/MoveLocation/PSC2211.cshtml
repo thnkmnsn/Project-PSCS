@@ -1,0 +1,166 @@
+﻿@model PSCS.ModelsScreen.MoveLocationScreenEdit
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC2211_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+       var LangTh = false;
+
+        $(function () {
+            if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true
+            }
+            else {
+                LangTh = false
+            }
+
+            $(".datepicker").datepicker_thai({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                langTh: LangTh,
+                yearTh: LangTh,
+            });
+        });
+
+    </script>
+}
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC2211_cshtml.Title</h1>
+
+@using (Html.BeginForm("PSC2211", "MoveLocation", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <tr>
+            <th>
+                <!-- Button area -->
+                <table align="right">
+                    <tr>
+                        <th>
+                            <Button id="btnSave" name="submitButton" value=Save class="btn btn-large btn-green">@PSCS.Resources.PSC2211_cshtml.Button_Save</Button>
+                            <Button id="btnApprove" name="submitButton" value=Approve class="btn btn-large btn-red">@PSCS.Resources.PSC2211_cshtml.Button_Approve</Button>
+                            <Button id="btnBack" name="submitButton" value=Back class="btn btn-large btn-secondary">@PSCS.Resources.PSC2211_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <tr>
+            <th>
+                <!-- Criteria area -->
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="60px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2211_cshtml.FilterYard</label>
+                                    </th>
+                                    <th width="170px">
+                                        @Html.DropDownListFor(m => m.DetailYardID, Model.YardList, "All", new { @style = "height:25px; width:120px;", @disabled = "disabled" })
+                                    </th>
+
+                                    <th width="200px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2211_cshtml.FilterMoveLocationDate</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.EditorFor(m => m.DetailInternalMoveDate, new { htmlAttributes = new { @readonly = "readonly", @disabled = "disabled", @style = "height:25px; width:100px;" } })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="15px"></th>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2211_cshtml.FilterTimeofStart</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.DetailStartHours, Model.HoursList, new { @style = "height:25px; width:40px;", @disabled = "disabled" })
+                                        <label class="textbox-caption">:</label>
+                                        @Html.DropDownListFor(m => m.DetailStartMinute, Model.MinuteList, new { @style = "height:25px; width:40px;", @disabled = "disabled" })
+                                    </th>
+
+                                    <th width="150px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2211_cshtml.FilterTimeofFinished</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.DetailFinishHours, Model.HoursList, new { @style = "height:25px; width:40px;", @disabled = "disabled" })
+                                        <label class="textbox-caption">:</label>
+                                        @Html.DropDownListFor(m => m.DetailFinishMinute, Model.MinuteList, new { @style = "height:25px; width:40px;", @disabled = "disabled" })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="left">
+                    <tr>
+                        <th>
+                            <Button id="btnDelete" name="submitButton" value="Delete" class="btn btn-large btn-red">@PSCS.Resources.PSC2211_cshtml.Button_Delete</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+
+        <!--Grid Area -->
+        <tr>
+            <th>
+                @(Html
+                    .Grid(Model.MoveLocationList)
+                    .Build(columns =>
+                    {
+                        columns.Add(model => model.RowNo).Titled(@PSCS.Resources.PSC2211_cshtml.GridRowNo).Css("gridtext-center");
+                        columns.Add(model => model.MoveId).AppendCss("hide");
+                        columns.Add(model => model.ItemCode).Titled(@PSCS.Resources.PSC2211_cshtml.GridItemCode);
+                        columns.Add(model => model.HeatNo).Titled(@PSCS.Resources.PSC2211_cshtml.GridHeatNo);
+                        //columns.Add(model => model.OD).Formatted("{0:#,##0.0}").Titled(@PSCS.Resources.PSC2211_cshtml.GridOD).Css("gridtext-right");
+                        //columns.Add(model => model.WT).Formatted("{0:#,##0.0}").Titled(@PSCS.Resources.PSC2211_cshtml.GridWT).Css("gridtext-right");
+                        //columns.Add(model => model.Length).Formatted("{0:#,##0}").Titled(@PSCS.Resources.PSC2211_cshtml.GridLT).Css("gridtext-right");
+                        //columns.Add(model => model.FromLocationName).Titled(@PSCS.Resources.PSC2211_cshtml.GridFromLocation);
+                        columns.Add(model => model.QTY).Formatted("{0:#,##0}").Titled(@PSCS.Resources.PSC2211_cshtml.GridQty).Css("gridtext-right");
+                        //columns.Add(model => model.DestinationName).Titled(@PSCS.Resources.PSC2211_cshtml.GridDestination);
+                        columns.Add(model => model.Remark).Titled(@PSCS.Resources.PSC2211_cshtml.GridRemark);
+                    })
+                    .Css("table-hover")
+                    .Empty(@PSCS.Resources.Common_cshtml.NoDataFound)
+                    .Sortable()
+                )
+            </th>
+        </tr>
+    </table>
+}
+  
+

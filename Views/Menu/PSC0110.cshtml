@@ -1,0 +1,85 @@
+﻿
+@{
+    ViewBag.Title = "PSCS - %PSC0110%";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Menu</title>
+
+    <script>
+        function getscreenresolution() {
+            window.alert("Your screen resolution is: " + screen.height + 'x' + screen.width);
+        }
+    </script>
+</head>
+<body>
+    <br />
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("Index", "Home")">Index</a>
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("Contact", "Home")">Contact</a>
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("About", "Home")">About</a>
+    <br />
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("PSC8060", "CommonMaster")">CommonMaster</a>
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("PSC2130", "InboundTallySheet")">InboundTallySheet</a>
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("PSC3300", "GetWI")">Test GetWI</a>
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("PSC3200", "SyncPipeStockData")">Test SyncPipeStockData</a>
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("Index", "PrintTest")">PrintTest</a>
+    <br />
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("Index", "Print")">Print index</a>
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("PSC2510", "Print")">Print</a>
+    <br />
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("PSC2310", "StockCheckManagement")">StockCheckManagement</a>
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("PSC2300", "StockCheckMonitor")">StockCheckMonitor</a>
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("Index", "StockCheckApprove")">StockCheckApprove</a>
+    <br />
+    <br />
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("PSC2510", "Stocktaking")">Stocktaking</a>
+    <br />
+    <br />
+    <span class="glyphicon  glyphicon-hand-right"></span>
+    <a href="@Url.Action("Index", "Templete")">Templete</a>
+    <br />
+
+    <div id="demo"></div>
+
+    <script>
+        var txt = "";
+        txt += "<p>Total width/height: " + screen.width + "*" + screen.height + "</p>";
+        txt += "<p>Available width/height: " + screen.availWidth + "*" + screen.availHeight + "</p>";
+        txt += "<p>Color depth: " + screen.colorDepth + "</p>";
+        txt += "<p>Color resolution: " + screen.pixelDepth + "</p>";
+
+        document.getElementById("demo").innerHTML = txt;
+    </script>
+</body>
+</html>

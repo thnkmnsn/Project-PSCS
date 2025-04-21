@@ -1,0 +1,452 @@
+﻿@using PagedList.Mvc;
+@using PagedList;
+@model PSCS.ModelsScreen.PipeItemScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC8010_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+
+        // Table Click
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            var item_code = $(e.target).closest('tr').find('td:nth-child(2)').text();
+            var heat_no = $(e.target).closest('tr').find('td:nth-child(4)').text();
+            //var receive_date = $(e.target).closest('tr').find('td:nth-child(5)').text();
+
+            url = '@Url.Action("PSC8010_Detail", "Pipe")';
+            window.location.href = url + '?item_code=' + item_code + '&heat_no=' + heat_no //+ '&receive_date=' + receive_date;
+        });
+
+
+        $('.mvc-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+        $(function () {
+            //$(".datepicker").datepicker({
+            //    dateFormat: "yy-mm-dd",
+            //    showOn: "both",
+            //    buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+            //});
+
+            $('.one-digits').keyup(function () {
+                if ($(this).val().indexOf('.') != -1) {
+                    if ($(this).val().split(".")[1].length > 1) {
+                        if (isNaN(parseFloat(this.value))) return;
+                        this.value = parseFloat(this.value).toFixed(1);
+                    }
+                }
+                return this;
+            });
+
+            $('.two-digits').keyup(function () {
+                if ($(this).val().indexOf('.') != -1) {
+                    if ($(this).val().split(".")[1].length > 2) {
+                        if (isNaN(parseFloat(this.value))) return;
+                        this.value = parseFloat(this.value).toFixed(2);
+                    }
+                }
+                return this;
+            });
+
+            $('.three-digits').keyup(function () {
+                if ($(this).val().indexOf('.') != -1) {
+                    if ($(this).val().split(".")[1].length > 3) {
+                        if (isNaN(parseFloat(this.value))) return;
+                        this.value = parseFloat(this.value).toFixed(3);
+                    }
+                }
+                return this;
+            });
+        });
+
+           $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });
+    </script>
+}
+
+<style>
+    .gridtext-right {
+        text-align: right;
+    }
+
+    .gridtext-center {
+        text-align: center;
+    }
+</style>
+
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC8010_cshtml.Title</h1>
+
+@using (Html.BeginForm("PSC8010", "Pipe", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(@Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {<strong>@PSCS.Resources.Common_cshtml.Success</strong>}
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {<strong>@PSCS.Resources.Common_cshtml.Information</strong>}
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {<strong>@PSCS.Resources.Common_cshtml.Warning</strong>}
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {<strong>@PSCS.Resources.Common_cshtml.Error</strong>}
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Button Area  -->
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <Button id="btnSync" name="submitButton" value="Sync" class="btn btn-large btn-skyblue">Get Item Master from S/L</Button>
+
+                            <Button id="btnClearFilter" name="submitButton" value="ClearFilter" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_ClearFilter</Button>
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <p>@PSCS.Resources.Common_cshtml.Total: @Html.DisplayFor(model => model.Total)  @PSCS.Resources.Common_cshtml.Item</p>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <th>
+            <button id="btnUpdate" name="submitButton" value="Update" class="btn btn-large btn-orange">Update Lot and Attribute</button>
+        </th>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <!-- Criteria area -->
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+
+                                    <!-- Item Code -->
+                                    <th width="90px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_ItemCode</label>
+                                    </th>
+                                    <th width="120px">
+                                        @Html.EditorFor(m => m.FilterItemCode, new { htmlAttributes = new { @style = "width:100px;", @maxlength = "32" } })
+                                    </th>
+
+                                    <!-- Description -->
+                                    <th width="110px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Grid_Description</label>
+                                    </th>
+                                    <th width="120px">
+                                        @Html.EditorFor(m => m.FilterDescription, new { htmlAttributes = new { @style = "width:100px;", @maxlength = "30" } })
+                                    </th>
+
+                                    <!-- Heat No -->
+                                    <th width="120px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_HeatNo</label>
+                                    </th>
+                                    <th width="120px">
+                                        @Html.EditorFor(m => m.FilterHeatNo, new { htmlAttributes = new { @style = "width:100px;", @maxlength = "15" } })
+                                    </th>
+
+                                    <!-- OD -->
+                                    <th width="30px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_OD</label>
+                                    </th>
+                                    <th width="120px">
+                                        @Html.EditorFor(m => m.FilterOD, new { htmlAttributes = new { @style = "width:100px;", @type = "number", @min = "0", @max = "10000", @step = "0.1", @class = "one-digits" } })
+                                    </th>
+
+                                    <!-- WT -->
+                                    <th width="30px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_WT</label>
+                                    </th>
+                                    <th width="120px">
+                                        @Html.EditorFor(m => m.FilterWT, new { htmlAttributes = new { @style = "width:100px;", @type = "number", @min = "0", @max = "10000", @step = "0.1", @class = "one-digits" } })
+                                    </th>
+
+                                    <!-- LT -->
+                                    <th width="30px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_LT</label>
+                                    </th>
+                                    <th width="120px">
+                                        @Html.EditorFor(m => m.FilterLT, new { htmlAttributes = new { @style = "width:100px;", @type = "number", @min = "0", @max = "100000" } })
+
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    @*<tr>
+                        <th height="10px"></th>
+                    </tr>*@
+                    @*<tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- OD -->
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_OD</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterOD, new { htmlAttributes = new { @style = "width:170px;", @type = "number", @min = "0", @max = "10000", @step = "0.1", @class = "one-digits" } })
+                                    </th>
+
+                                    <!-- WT -->
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_WT</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterWT, new { htmlAttributes = new { @style = "width:170px;", @type = "number", @min = "0", @max = "10000", @step = "0.1", @class = "one-digits" } })
+                                    </th>
+
+                                    <!-- LT -->
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_LT</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterLT, new { htmlAttributes = new { @style = "width:170px;", @type = "number", @min = "0", @max = "100000" } })
+
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>*@
+                    <tr>
+                        <th height="10px"></th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- Unit Weight -->
+                                    @*<th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_UnitWeight</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterUnitWeight, new { htmlAttributes = new { @style = "width:170px;", @type = "number", @min = "0", @max = "100000000", step = "0.001", @class = "three-digits" } })
+                                    </th>*@
+
+                                    <!-- Unit Weight -->
+                                    <th width="90px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_UnitWeight</label>
+                                    </th>
+                                    <th width="120px">
+                                        @Html.EditorFor(m => m.FilterUnitWeight, new { htmlAttributes = new { @style = "width:100px;", @type = "number", @min = "0", @max = "100000000", step = "0.001", @class = "three-digits" } })
+                                    </th>
+
+                                    <!-- Material Name -->
+                                    <th width="110px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_MaterialName</label>
+                                    </th>
+                                    <th width="120px">
+                                        @*@Html.EditorFor(m => m.FilterMaterialName, new { htmlAttributes = new { @style = "height:25px; width:170px;", @maxlength = "15" } })*@
+                                        @Html.DropDownListFor(m => m.FilterMaterialName, Model.MaterialList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:100px;" })
+
+                                    </th>
+                                    <!-- Standard Name -->
+                                    <th width="120px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_StandardName</label>
+                                    </th>
+                                    <th width="120px">
+                                        @*@Html.EditorFor(m => m.FilterStandardName, new { htmlAttributes = new { @style = "height:25px; width:170px;", @maxlength = "15" } })*@
+                                        @Html.DropDownListFor(m => m.FilterStandardName, Model.StandardList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:100px;" })
+
+                                    </th>
+
+                                    <!-- Grade Name -->
+                                    <th width="100px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_GradeName</label>
+                                    </th>
+                                    <th width="120px">
+
+                                        @Html.DropDownListFor(m => m.FilterGradeName, Model.GradeList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:100px;" })
+                                    </th>
+
+
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    @*<tr>
+                        <th height="10px"></th>
+                    </tr>*@
+
+                    @*<tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- Grade Name -->
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_GradeName</label>
+                                    </th>
+                                    <th width="200px">
+
+                                        @Html.DropDownListFor(m => m.FilterGradeName, Model.GradeList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:170px;" })
+                                    </th>
+                                    <!-- Shape Name -->
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_ShapeName</label>
+                                    </th>
+                                    <th width="200px">
+
+                                        @Html.DropDownListFor(m => m.FilterShapeName, Model.ShapeList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:170px;" })
+                                    </th>
+
+                                    <!-- Maker Name -->
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_MakerName</label>
+                                    </th>
+                                    <th width="200px">
+
+                                        @Html.DropDownListFor(m => m.FilterMakerName, Model.MakerList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:170px;" })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>*@
+                    <tr>
+                        <th height="10px"></th>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- Shape Name -->
+                                    <th width="90px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_ShapeName</label>
+                                    </th>
+                                    <th width="120px">
+
+                                        @Html.DropDownListFor(m => m.FilterShapeName, Model.ShapeList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:100px;" })
+                                    </th>
+
+                                    <!-- Maker Name -->
+                                    <th width="110px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_MakerName</label>
+                                    </th>
+                                    <th width="120px">
+
+                                        @Html.DropDownListFor(m => m.FilterMakerName, Model.MakerList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:100px;" })
+                                    </th>
+
+                                    <!-- Order By -->
+                                    <th width="120px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.FilterOrderBy</label>
+                                    </th>
+                                    <th width="120px">
+                                        @*@Html.EditorFor(m => m.FilterGradeName, new { htmlAttributes = new { @style = "height:25px; width:170px;", @maxlength = "15" } })*@
+                                        @Html.DropDownListFor(m => m.FilterOrderBy, Model.OrderByList, new { @style = "height:25px; width:100px;" })
+                                    </th>
+                                    <!-- Sort By -->
+                                    <th width="100px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.FilterSortBy</label>
+                                    </th>
+                                    <th width="120px">
+                                        @*@Html.EditorFor(m => m.FilterShapeName, new { htmlAttributes = new { @style = "height:25px; width:170px;", @maxlength = "15" } })*@
+                                        @Html.DropDownListFor(m => m.FilterSortBy, Model.SortByList, new { @style = "height:25px; width:100px;" })
+                                    </th>
+
+                                    <th width="100px">
+                                        <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large">@PSCS.Resources.PSC8010_cshtml.Button_Filter</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+
+        <!--Grid Area -->
+        <tr>
+            <th>
+                @(Html
+                        .Grid(Model.DisplayPipeList)
+                        .Build(columns =>
+                        {
+                            columns.Add(model => model.RowNo).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_RowNo).Css("gridtext-center");
+                            columns.Add(model => model.ItemCode).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_ItemCode).Css("gridtext-center");
+                            columns.Add(model => model.Description).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_Description).Css("gridtext-center");
+                            columns.Add(model => model.HeatNo).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_HeatNo).Css("gridtext-center");
+                            columns.Add(model => model.OD).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_OD).Css("gridtext-right").Formatted("{0:n2}");
+                            columns.Add(model => model.WT).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_WT).Css("gridtext-right").Formatted("{0:n2}");
+                            columns.Add(model => model.LT).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_LT).Css("gridtext-right").Formatted("{0:n0}");
+                            //columns.Add(model => model.Size).Titled("Size");
+                            columns.Add(model => model.UnitWeight).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_UnitWeight).Css("gridtext-right").Formatted("{0:n3}");
+                            columns.Add(model => model.MaterialName).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_MaterialName).Css("gridtext-center");
+                            columns.Add(model => model.GradeName).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_GradeName).Css("gridtext-center");
+                            columns.Add(model => model.ShapeName).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_ShapeName).Css("gridtext-center");
+                            columns.Add(model => model.MakerName).Titled(@PSCS.Resources.PSC8010_cshtml.Grid_MakerName).Css("gridtext-center");
+                        })
+                        .Css("table-hover")
+                        .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+                        .Sortable()
+                )
+            </th>
+        </tr>
+
+
+
+    </table>
+
+    @*@Html.PagedListPager((IPagedList)ViewBag.OnePageOfProducts, page => Url.Action("paging", new { page=page,
+            pItemCode = ViewBag.pItemCode,
+            pDescription = ViewBag.pDescription,
+            pHeatNo = ViewBag.pHeatNo,
+            pWeight = ViewBag.pWeight,
+            pMaterialName = ViewBag.pMaterialName,
+            pStandardName = ViewBag.pStandardName,
+            pGradeName = ViewBag.pGradeName,
+            pShapeName = ViewBag.pShapeName,
+            pOD = ViewBag.pOD,
+            pWT = ViewBag.pWT,
+            pLT = ViewBag.pLT,
+            pMakerName = ViewBag.pMakerName,
+            pOrderBy = ViewBag.pOrderBy,
+            pSortBy = ViewBag.pSortBy
+        }))
+        }*@
+
+    @Html.PagedListPager((IPagedList)ViewBag.OnePageOfProducts, page => Url.Action("paging", new { page=page}))
+}
+
+
+

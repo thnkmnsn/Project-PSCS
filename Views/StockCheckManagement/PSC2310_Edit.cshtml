@@ -1,0 +1,161 @@
+﻿@model PSCS.ModelsScreen.StockCheckManagementScreenEdit
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = "PSC2310_Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+}
+
+<!-- Title -->
+<h1 class="H1">Stock Check Management - Detail</h1>
+@using (Html.BeginForm("PSC2310_Edit", "StockCheckManagement", FormMethod.Post))
+{
+<table border="0" cellSpacing="0" cellPadding="0" width="100%">
+    <!-- Alert Area  -->
+    <tr>
+        <td>
+            <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")">
+
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                {
+                <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                }
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                {
+                <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                }
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                {
+                <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                }
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                {
+                    <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                }
+                <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+            </div>
+        </td>
+    </tr>
+
+    <!-- Button Area  -->
+    <tr>
+        <th>
+            <table align="right">
+                <tr>
+                    <th>
+                        <Button id="btnSave" name="submitButton" value="Save" class="btn btn-large btn-green">Save</Button>
+                        <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">Back</Button>
+                    </th>
+                </tr>
+            </table>
+        </th>
+    </tr>
+
+    <!-- Criteria area -->
+    <tr>
+        <th>
+            <table border="0" cellSpacing="0" cellPadding="0">
+                <tr>
+                    <th>
+                        <table border="0" cellSpacing="0" cellPadding="0">
+                            <tr>
+                                <!-- Stock Check Date -->
+                                <th width="140px">
+                                    @Html.LabelFor(m => m.DetailStockCheckDate, htmlAttributes: new { @class = "textbox-caption" })
+                                </th>
+                                <th width="120px">
+                                    @if (Model.EditMode.Equals("Edit"))
+                                    {
+                                        @Html.TextBoxFor(m => m.DetailStockCheckDate, new { @style = "height:25px; width:90px;", @readonly = "readonly" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(m => m.DetailStockCheckDate, new { @datepicker = "datepicker row", @style = "height:25px; width:90px;", @readonly = "readonly" })
+                                    }
+                                </th>
+
+                                <!-- Yard -->
+                                <th width="50px">
+                                    @Html.LabelFor(m => m.DetailYard, htmlAttributes: new { @class = "textbox-caption" })
+                                </th>
+                                <th width="100px">
+                                    @Html.DropDownListFor(m => m.DetailYard, Model.YardList, Model.EditMode.Equals("Edit")
+                                                                                            ? (object)new { @style = "height:25px; width:80px;", @disabled = "disabled" }
+                                                                                            :(object)new { @style = "height:25px; width:80px;" })
+                                </th>
+
+                                <!-- Status -->
+                                <th width="70px">
+                                    @Html.LabelFor(m => m.DetailStatus, htmlAttributes: new { @class = "textbox-caption" })
+                                </th>
+                                <th width="130px">
+                                    @Html.DropDownListFor(m => m.DetailStatus, Model.StatusList, Model.EditMode.Equals("Edit")
+                                                                                            ? (object)new { @style = "height:25px; width:80px;", @disabled = "disabled" }
+                                                                                            : (object)new { @style = "height:25px; width:80px;" })
+                                </th>
+                            </tr>
+                        </table>
+                    </th>
+                </tr>
+            </table>
+        </th>
+    </tr>
+    <tr>
+        <th height="10px"></th>
+    </tr>
+    <!-- Button Area  -->
+    <tr>
+        <th>
+            <table align="left">
+                <tr>
+                    <th>
+                        <Button id="btnAdd" name="submitButton" value="Add" class="btn btn-large btn-skyblue">Add</Button>
+                        <Button id="btnEdit" name="submitButton" value="Edit" class="btn btn-large btn-orange">Edit</Button>
+                        <Button id="btnDelete" name="submitButton" value="Delete" class="btn btn-large btn-red">Delete</Button>
+                    </th>
+                </tr>
+            </table>
+        </th>
+    </tr>
+    <tr>
+        <th height="10px"></th>
+    </tr>
+    <!--Grid Area -->
+    <tr>
+        <th>
+            @(Html
+                                                                                .Grid(Model.DataList)
+                                                                                .Build(columns =>
+                                                                                {
+                                                                                    columns.Add(model => model.RowNo).Titled("Row No.").Css("gridtext-center");
+                                                                                    columns.Add(model => model.LocationName).Titled("Location");
+                                                                                    columns.Add(model => model.ItemCode).Titled("Item code");
+                                                                                    columns.Add(model => model.HeatNo).Titled("Heat No.");
+                                                                                    columns.Add(model => model.OD).Titled("O.D").Css("gridtext-right");
+                                                                                    columns.Add(model => model.WT).Titled("W.T").Css("gridtext-right");
+                                                                                    columns.Add(model => model.Length).Titled("Length").Css("gridtext-right");
+                                                                                    columns.Add(model => model.Qty).Titled("Qty").Css("gridtext-right");
+                                                                                    columns.Add(model => model.ActualQty).Titled("Actual Qty").Css("gridtext-right");
+                                                                                    columns.Add(model => model.Status).Titled("Status");
+                                                                                    columns.Add(model => model.Remark).Titled("Remark");
+                                                                                })
+                                                                                .Css("table-hover")
+                                                                                 .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+                                                                                .Sortable()
+            )
+        </th>
+    </tr>
+</table>
+}
+

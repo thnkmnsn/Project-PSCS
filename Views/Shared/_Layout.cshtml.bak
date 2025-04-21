@@ -1,0 +1,386 @@
+﻿@using CoolMenu @* !!!! don't forget about namespace*@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href=@Url.Action("../Icon/PSCSIcon16.ico") />
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="~/Content/MvcGrid/mvc-grid.css" rel="stylesheet">
+    <script src="~/Scripts/moment.min.js"></script>
+    <script src="~/Scripts/accounting.min.js"></script>
+    <script src="~/Scripts/decimal.min.js"></script>
+    <script src="~/Scripts/toFormat.min.js"></script>
+    <script src="~/Scripts/numeral.min.js"></script>
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    @RenderSection("css", required: false)
+
+    <style>
+        body {
+            margin-top: 0px;
+        }
+
+        .label {
+            float: left;
+            font-size: 20px;
+            color: white;
+            padding: 14px 16px;
+            text-decoration: none;
+            text-align: left;
+        }
+
+        .navbar {
+            margin-top: 0px;
+            overflow: hidden;
+            background-color: #659AD8;
+        }
+
+            .navbar a {
+                float: left;
+                font-size: 16px;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+
+        .dropdown {
+            float: left;
+            overflow: hidden;
+        }
+
+            .dropdown .dropbtn {
+                font-size: 16px;
+                border: none;
+                outline: none;
+                color: white;
+                padding: 14px 16px;
+                background-color: inherit;
+                font-family: inherit;
+                margin: 0;
+            }
+
+            .navbar a:hover, .dropdown:hover .dropbtn {
+                background-color: #4C7AB1;
+            }
+
+        /*All Menu level 2 menu Style*/
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            max-width: 240px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+            .dropdown-content a {
+                float: none;
+                color: black;
+                padding: 5px 16px;
+                text-decoration: none;
+                display: block;
+                text-align: left;
+                transition: background-color ease-out 1s;
+            }
+
+                .dropdown-content a:hover {
+                    background-color: #ddd;
+                }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /*Report Menu level 2 menu Style*/
+        .droprightbtn {
+            background-color: #f9f9f9;
+            color: black;
+            padding: 5px;
+            font-size: 16px;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        /*Report Menu level 3 menu Style*/
+        .dropright {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .dropright-content {
+            display: none;
+            position: absolute;
+            background-color: #F5F5F5;
+            /*min-width: 160px;*/
+            width: 100%;
+            left: 100%;
+            top: 0px;
+            z-index: 1;
+        }
+
+            .dropright-content a {
+                color: black;
+                padding: 5px 16px;
+                text-decoration: none;
+                display: block;
+                transition: background-color ease-out 1s;
+            }
+
+                .dropright-content a:hover {
+                    background-color: #ddd;
+                }
+
+        .dropright:hover .dropright-content {
+            display: block;
+        }
+
+        .dropright:hover .dropbtn {
+            background-color: #3e8e41;
+        }
+
+        .dropdowndisable {
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .dropdownenable {
+            cursor: auto;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav_navbar_header navbar-inverse" style="background-color:#011755; ">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+
+                @{
+                    string urlpath;
+                    if (Session["InitializeActionName"] != null)
+                    {
+                        urlpath = "/Menu/PSC0100";
+                    }
+                    else
+                    {
+                        urlpath = "../";
+                    }
+                    <a href=@urlpath class="navbar-brand" style="padding:10px 10px 10px 15px;">
+                        <img src="~/Image/Awaji10.png" width="100px">
+                    </a>
+                    <a href=@urlpath class="navbar-brand navbar-title">
+                        <p>
+                            <span id="LabelAppTitle" class="label">Pipe Stock Control System</span>
+                            <span id="LabelVersion" class="label">v.1.0.0.5</span>
+                        </p>
+                    </a>
+                }
+
+            </div>
+
+            <div class="navbar-collapse collapse" style="height: auto;">
+                    <ul class="dropdown-content">
+                        @{
+                            var controllerName = this.ViewContext.RouteData.Values["controller"].ToString();
+
+                            @Html.Raw(Html.GetMenuHtml("LanguageMenu", controllerName, ""))
+                        }
+
+                        @if (ViewBag.LoginPage != true)
+                        {
+                            var strLoginUserName = "";
+                            if (Session["LoginUserName"] != null)
+                            {
+                                strLoginUserName = Convert.ToString(Session["LoginUserName"]);
+                            }
+
+                            Session["CurrentLoginUserName"] = strLoginUserName;
+
+                            @Html.Raw(Html.GetMenuHtml("AccountMenu", "", strLoginUserName))
+                        }
+                    </ul>
+                </div>
+        </div>
+    </div>
+
+    <div class="container body-content">
+
+        @RenderBody()
+
+        <script src="~/Scripts/MvcGrid/mvc-grid.js"></script>
+        <script>
+            [].forEach.call(document.getElementsByClassName('mvc-grid'), function (element) {
+                new MvcGrid(element);
+            });
+        </script>
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - Innova Software Co., Ltd.</p>
+        </footer>
+    </div>
+
+    <script src="/Scripts/jquery-3.4.1.js"></script>
+    <script src="/Scripts/bootstrap.js"></script>
+    <script src="/Scripts/respond.js"></script>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+
+
+    <script>
+
+
+
+        function EnableDropDown(arg) {
+
+            if (arg != null) {
+
+                if (arg.attr('readonly') != undefined) {
+                    arg.removeAttr('readonly');
+                }
+
+                if (arg.hasClass("dropdowndisable") == true) {
+                    arg.removeClass("dropdowndisable");
+                    arg.addClass("dropdownenable");
+                }
+                else {
+                    arg.addClass("dropdownenable");
+                };
+
+
+            }
+
+        }
+
+        function DisableDropDown(arg) {
+
+            if (arg != null) {
+
+                if (arg.attr('readonly') == undefined) {
+                    arg.attr("readonly", "readonly");
+                }
+
+                if (arg.hasClass("dropdownenable") == true) {
+                    arg.removeClass("dropdownenable");
+                    arg.addClass("dropdowndisable");
+                }
+                else {
+                    arg.addClass("dropdowndisable");
+                };
+            }
+        }
+
+        function decmul(x, y, z) {
+
+            toFormat(Decimal);
+
+            Decimal.format = {
+                decimalSeparator: '.',
+                groupSeparator: ',',
+                groupSize: 3,
+                secondaryGroupSize: 0,
+                fractionGroupSeparator: '',
+                fractionGroupSize: 0
+            }
+
+            if (x != null && x != undefined && y != null && y != undefined) {
+
+                var val1 = new Decimal(x);
+                var val2 = new Decimal(y);
+
+                var result = new Decimal(val1).mul(val2);
+
+                //  console.log(result.toString());
+
+                return result.toFormat(z);
+
+            }
+            else {
+
+                var result = new Decimal(0);
+
+                //   console.log(result.toString());
+
+                return result.toFormat(z);
+            }
+        }
+
+        function unformat(x) {
+
+            if (x != null && x != undefined && x != '') {
+
+                return x.replace(/,/g, '');
+
+            }
+            else {
+                return x;
+            }
+
+        }
+
+        // x = value , y = decimal place , z = min decimal place
+        function trimtrailzero(x, y, z) {
+
+            if (x != null && x != undefined && x != '') {
+
+                //x = x.replace(/,/g, '');
+
+                if (x.indexOf('.') == -1) {
+                    //  console.log('A');
+                    return x;
+                }
+                else {
+                    var splitString = x.split(".");
+                    if (splitString.length != 2) {
+                        // console.log('B');
+                        return x;
+                    }
+                    else {
+                        if (splitString[1].length <= z) {  // decimal digit < min
+                            //  console.log('C');
+                            return x;
+                        }
+                        else if (splitString[1].length != y) {
+                            return x;
+                        }
+                        else {
+
+                            var padzero = '';
+
+
+                            for (var i = z; i <= y; i++) {
+                                tmp = splitString[1].substring(splitString[1].length - (y - i));
+                                // console.log('target=' + tmp);
+                                padzero = '';
+                                padzero = padzero.padStart((y - i), "0");
+                                // console.log('padzero=' + padzero);
+                                if (tmp == padzero) {
+                                    //  console.log('D');
+                                    return splitString[0] + '.' + splitString[1].substring(0, i);
+                                }
+                            }
+                            //  console.log('E');
+                            return splitString[0] + '.' + splitString[1];
+                        }
+                    }
+                }
+            }
+            else {
+                console.log('F');
+                return x;
+            }
+        }
+    </script>
+</body>
+</html>

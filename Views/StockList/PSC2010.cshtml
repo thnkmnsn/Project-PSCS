@@ -1,0 +1,565 @@
+﻿@using PagedList.Mvc;
+@using PagedList;
+@model PSCS.ModelsScreen.StockListScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC2010_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_monthyear.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_thai_min.js"></script>
+    @*<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_monthyear.js"></script>*@
+    <script src="~/Scripts/SessionTimeout.js"></script>
+    <script language="javascript" type="text/javascript">
+        var LangTh = false;
+
+        $(function () {
+            if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true;
+
+                $(".yearmonthpicker").datepicker_monthyear({
+                    dateFormat: "yy-mm",
+                    showOn: "both",
+                    changeMonth: true,
+                    changeYear: true,
+                    buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                });
+
+                // first time; Yearmonth not show in thia lang mode
+                if ($("#FilterYearMonth").val() == "") {
+                    $("#FilterYearMonth").val('@ViewBag.pYearMonth');
+                }
+            }
+            else {
+                LangTh = false;
+
+                $(".yearmonthpicker").datepicker({
+                    dateFormat: "yy-mm",
+                    showOn: "both",
+                    changeMonth: true,
+                    changeYear: true,
+                    buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                    onClose: function (dateText, inst) {
+                        $(this).datepicker('setDate', new Date(inst.selectedYear, inst.selectedMonth, 1));
+                    }
+                });
+
+            }
+
+            if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true;
+
+            }
+            else {
+                LangTh = false;
+
+            }
+
+            $(".datepicker").datepicker_thai({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                langTh: LangTh,
+                yearTh: LangTh,
+            });
+
+            $('#FilterHeatNo').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    $("#btnFilter").click();
+                    return false;
+                }
+            });
+
+            $('#FilterDescription').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    $("#btnFilter").click();
+                    return false;
+                }
+            });
+
+            $('#FilterOD').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    $("#btnFilter").click();
+                    return false;
+                }
+            });
+
+            $('#FilterWT').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    $("#btnFilter").click();
+                    return false;
+                }
+            });
+
+            $('#FilterLength').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    $("#btnFilter").click();
+                    return false;
+                }
+            });
+        });
+
+        // Row selected
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            var pYard = $(e.target).closest('tr').find('td:nth-child(2)').text();
+            var pLocation = $(e.target).closest('tr').find('td:nth-child(4)').text();
+            var pItemcode = $(e.target).closest('tr').find('td:nth-child(6)').text();
+            var pHeatno = $(e.target).closest('tr').find('td:nth-child(7)').text();
+
+            $.ajax({
+                type: "Get",
+                url: '@Url.Action("GetStockListDetail", "StockList")',
+                data: {
+                    yard: pYard,
+                    location: pLocation,
+                    itemcode: pItemcode,
+                    heatno: pHeatno
+                },
+                success: function (data) {
+                    $('body').addClass('scroll');
+                    $('#Preview').html(data);
+                    $('#myModal').modal('show');
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            })
+        });
+
+        // Patial view: Dropdown list change
+        $(document).on("change", "#ddlYard", function (e) {
+            var _id = $('#ddlYard').val();
+
+            $.ajax({
+                url: "/StockList/ddlChangePipYard/",
+                type: "GET",
+                dataType: "JSON",
+                data: { Yard: _id },
+                success: function (response) {
+                    $("#ddlLoc").html("");
+
+                    $("#ddlLoc").append($('<option></option>')
+                        .val('').html('@PSCS.Resources.Common_cshtml.All'));
+
+                    $.each(response, function (index, value) {
+                        $("#ddlLoc").append(
+                            $('<option></option>').val(value.LocationID).html(value.Name)
+                        );
+                    });
+
+                    $('#ddlLoc').prop('selectedIndex', 0);
+                },
+                error: function (reponse) {
+                    //alert("error : " + reponse);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        });
+        
+        $('#FilterYearMonth').focusin(function () {
+            $('.ui-datepicker-calendar').css("display", "none");
+            $('#FilterYearMonth').datepicker('setDate', new Date(year, month, 1)).trigger('change');
+        });
+
+        $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("Back", "StockList")';
+        });
+
+        $('.mvc-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+    </script>
+}
+
+<style>
+
+    /*Important part*/
+    .modal-dialog {
+        overflow-y: initial !important
+    }
+
+    .modal-body {
+        height: 350px;
+        overflow-y: auto;
+    }
+</style>
+
+<h1 class="H1">@PSCS.Resources.PSC2010_cshtml.Title</h1>
+
+@using (Html.BeginForm("PSC2010", "StockList", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <th>
+                <!-- Button area -->
+                <table align="right">
+                    <tr>
+                        <th>
+                            <button id="btnExport" name="submitButton" value="Export" class="btn btn-skyblue btn-large btnCustom5">@PSCS.Resources.PSC8030_Edit_cshtml.Button_Export</button>
+                            <Button id="btnClearFilter" name="submitButton" value="ClearFilter" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_ClearFilter</Button>
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <table align="right">
+                                <tr>
+                                    <th>
+                                        @PSCS.Resources.Common_cshtml.Total: @Html.DisplayFor(model => model.Total)  @PSCS.Resources.Common_cshtml.Item<BR>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <table align="right">
+                                <tr>
+                                    <th>
+                                        @PSCS.Resources.Common_cshtml.TotalWeight: @Html.DisplayFor(model => model.TotalWeigth)  @PSCS.Resources.Common_cshtml.ItemTon
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="145px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterYearMonth</label>
+                                    </th>
+                                    <th width="140px">
+                                        @Html.EditorFor(m => m.FilterYearMonth, new { htmlAttributes = new { @class = "yearmonthpicker row", @readonly = "readonly", @style = "width:100px;" ,@tabindex = 1 } })
+                                    </th>
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterReceiveDate</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterReceiveDate, new { htmlAttributes = new { @id = "txtReceiveDateFrom", @class = "datepicker row", @readonly = "readonly", @style = "width:140px;", @tabindex = 2 } })
+                                    </th>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterYard</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.FilterYardID, Model.YardList, @PSCS.Resources.Common_cshtml.All, new { @id = "ddlYard", @style = "height:25px; width:120px;" , @tabindex = 3 })
+                                    </th>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterLocation</label>
+                                    </th>
+                                    <th width="140px">
+                                        @Html.DropDownListFor(m => m.FilterLocationID, Model.LocationList, @PSCS.Resources.Common_cshtml.All, new { @id = "ddlLoc", @style = "height:25px; width:120px;", @tabindex = 4 })
+                                    </th>
+                                    <th width="90px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterShowZero</label>
+                                    </th>
+                                    <th width="140px">
+                                        @Html.CheckBoxFor(m => m.FilterIsShowZero, new { @checked = "checked", @tabindex = 5 })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="80px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterHeatNo</label>
+                                    </th>
+                                    <th width="150px">
+                                        @*@Html.Editor("HeatNo", new { htmlAttributes = new { @class = "textbox-100" } })*@
+                                        @Html.EditorFor(m => m.FilterHeatNo, new { htmlAttributes = new { @style = "height:25px; width:130px;", @tabindex = 6 } })
+                                    </th>
+                                    <th width="100px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterDescription</label>
+                                    </th>
+                                    <th width="230px">
+                                        @*@Html.Editor("ItemCode", new { htmlAttributes = new { @class = "textbox-100" } })*@
+                                        @Html.EditorFor(m => m.FilterDescription, new { htmlAttributes = new { @style = "height:25px; width:205px;", @tabindex = 7 } })
+                                    </th>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterOD</label>
+                                    </th>
+                                    <th width="130px">
+                                        @*@Html.Editor("OD", new { htmlAttributes = new { @class = "textbox-100" } })*@
+                                        @Html.EditorFor(m => m.FilterOD, new { htmlAttributes = new { @class = "textbox-100", @type = "number", @min = "0", @max = "10000", @step = "0.1", @tabindex = 8 } })
+                                    </th>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterWT</label>
+                                    </th>
+                                    <th width="120px">
+                                        @*@Html.Editor("WT", new { htmlAttributes = new { @class = "textbox-100" } })*@
+                                        @Html.EditorFor(m => m.FilterWT, new { htmlAttributes = new { @class = "textbox-100", @type = "number", @min = "0", @max = "10000", @step = "0.1", @tabindex = 9 } })
+                                    </th>
+                                    <th width="60px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterLength</label>
+                                    </th>
+                                    <th width="120px">
+                                        @*@Html.Editor("Length", new { htmlAttributes = new { @class = "textbox-100" } })*@
+                                        @Html.EditorFor(m => m.FilterLength, new { htmlAttributes = new { @class = "textbox-100", @type = "number", @min = "0", @max = "100000", @step = "1", @tabindex = 10 } })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="80px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterGrade</label>
+                                    </th>
+                                    <th width="150px">
+                                        @Html.DropDownListFor(m => m.FilterGrade, Model.GradeList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;", @tabindex = 11 })
+                                    </th>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterMaker</label>
+                                    </th>
+                                    <th width="140px">
+                                        @Html.DropDownListFor(m => m.FilterMaker, Model.MakerList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;", @tabindex = 12 })
+                                    </th>
+                                    <!-- Standard Name -->
+                                    <th width="120px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8010_cshtml.Filter_StandardName</label>
+                                    </th>
+                                    <th width="120px">
+                                        @*@Html.EditorFor(m => m.FilterStandardName, new { htmlAttributes = new { @style = "height:25px; width:170px;", @maxlength = "15" } })*@
+                                        @Html.DropDownListFor(m => m.FilterStandardName, Model.StandardList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:100px;", @tabindex = 13 })
+
+                                    </th>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterOrderBy</label>
+                                    </th>
+                                    <th width="140px">
+                                        @*@Html.Editor("Grade", new { htmlAttributes = new { @class = "textbox-100" } })*@
+                                        @Html.DropDownListFor(m => m.FilterOrderBy, Model.OrderByList, new { @style = "height:25px; width:120px;", @tabindex = 14 })
+                                    </th>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterSortBy</label>
+                                    </th>
+                                    <th width="150px">
+                                        @*@Html.Editor("Maker", new { htmlAttributes = new { @class = "textbox-100" } })*@
+                                        @Html.DropDownListFor(m => m.FilterSortBy, Model.SortByList, new { @style = "height:25px; width:120px;", @tabindex = 15 })
+                                    </th>
+                                    @*<th width="140px">
+                                            <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large btnCustom5">@PSCS.Resources.PSC2010_cshtml.Button_Filter</Button>
+                                        </th>*@
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="80px">
+                                        <label class="textbox-caption">Gerab (PO)</label>
+                                    </th>
+                                    <th width="150px">
+                                        @Html.DropDownListFor(m => m.FilterGerabPO, Model.GerabPOList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;", @tabindex = 16 })
+                                    </th>
+                                    <th width="80px">
+                                        <label class="textbox-caption">Singapore</label>
+                                    </th>
+                                    <th width="150px">
+                                        @Html.DropDownListFor(m => m.FilterSingapore, Model.SingaporeList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;", @tabindex = 17 })
+                                    </th>
+                                    <th width="80px">
+                                        <label class="textbox-caption">C21,SHL1</label>
+                                    </th>
+                                    <th width="150px">
+                                        @Html.DropDownListFor(m => m.FilterC21SHL1, Model.C21SHL1List, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;", @tabindex = 18 })
+                                    </th>
+                                    <th width="140px">
+                                        <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large btnCustom5" tabindex = 19 >@PSCS.Resources.PSC2010_cshtml.Button_Filter</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+
+        <tr>
+            <th>
+                @(Html
+                                            .Grid(Model.DisplayDataList)
+                                            .Build(columns =>
+                                            {
+
+                                                columns.Add(model => model.RowNo).Titled(@PSCS.Resources.PSC2010_cshtml.GridRowNo).Css("gridtext-center");
+                                                columns.Add(model => model.YardID).Css("hidden");
+                                                columns.Add(model => model.YardName).Titled(@PSCS.Resources.PSC2010_cshtml.GridYard).Css("gridtext-center");
+                                                columns.Add(model => model.LocationCode).Css("hidden");
+                                                columns.Add(model => model.LocationName).Titled(@PSCS.Resources.PSC2010_cshtml.GridLocation).Css("gridtext-center");
+                                                columns.Add(model => model.ItemCode).Titled(@PSCS.Resources.PSC2010_cshtml.GridItemCode).Css("gridtext-center");
+                                                columns.Add(model => model.HeatNo).Titled(@PSCS.Resources.PSC2010_cshtml.GridHeatNo).Css("gridtext-center");
+                                                columns.Add(model => model.Description).Titled(@PSCS.Resources.PSC2010_cshtml.GridDescription).Css("gridtext-center");
+                                                columns.Add(model => model.OD).Titled(@PSCS.Resources.PSC2010_cshtml.GridOD).Css("gridtext-right").Formatted("{0:n2}");
+                                                columns.Add(model => model.WT).Titled(@PSCS.Resources.PSC2010_cshtml.GridWT).Css("gridtext-right").Formatted("{0:n2}");
+                                                columns.Add(model => model.Length).Titled(@PSCS.Resources.PSC2010_cshtml.GridLength).Css("gridtext-right").Formatted("{0:n0}");
+                                                columns.Add(model => model.Grade).Titled(@PSCS.Resources.PSC2010_cshtml.GridGrade).Css("gridtext-center");
+                                                columns.Add(model => model.Maker).Titled(@PSCS.Resources.PSC2010_cshtml.GridMaker).Css("gridtext-center");
+                                                columns.Add(model => model.Qty).Titled(@PSCS.Resources.PSC2010_cshtml.GridQty).Css("gridtext-right");
+                                                columns.Add(model => model.TotalWeight).Titled(@PSCS.Resources.PSC2010_cshtml.TotalWeight).Css("gridtext-right").Formatted("{0:n2}");
+                                                columns.Add(model => model.MN).Titled(@PSCS.Resources.PSC2010_cshtml.GridMN).Css("gridtext-right").Formatted("{0:n2}");
+                                                columns.Add(model => model.C).Titled(@PSCS.Resources.PSC2010_cshtml.GridC).Css("gridtext-right").Formatted("{0:n2}");
+                                                columns.Add(model => model.MNDivC).Titled(@PSCS.Resources.PSC2010_cshtml.GridMNDivC).Css("gridtext-right").Formatted("{0:n2}");
+                                            })
+                                            .Id("GridChk")
+                                            .Css("table-hover")
+                                            .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+                                            .Sortable()
+                )
+            </th>
+        </tr>
+    </table>
+    @*if (ViewBag.OnePageOfProducts != null)
+        {
+            @Html.PagedListPager((IPagedList)ViewBag.OnePageOfProducts, page => Url.Action("paging", new
+                    {
+                        page = page,
+                        pYardID = ViewBag.pYardID,
+                        pLocationID = ViewBag.pLocationID,
+                        pItemCode = ViewBag.pItemCode,
+                        pHeatNo = ViewBag.pHeatNo,
+                        pDescription = ViewBag.pDescription,
+                        pOD = ViewBag.pOD,
+                        pWT = ViewBag.pWT,
+                        pLength = ViewBag.pLength,
+                        pGrade = ViewBag.pGrade,
+                        pMaker = ViewBag.pMaker,
+                        pStandardName = ViewBag.pStandardName,
+                        pOrderBy = ViewBag.pOrderBy,
+                        pSortBy = ViewBag.pSortBy,
+                        pYearMonthFrom = ViewBag.pYearMonthFrom,
+                        pYearMonthTo = ViewBag.pYearMonthTo
+                    }))
+        }*@
+
+    @*@Html.PagedListPager((IPagedList)ViewBag.OnePageOfProducts, page => Url.Action("paging", new {
+            page = page,
+            pYardID = ViewBag.pYardID,
+            pLocationID = ViewBag.pLocationID,
+            pItemCode = ViewBag.pItemCode,
+            pHeatNo = ViewBag.pHeatNo,
+            pDescription = ViewBag.pDescription,
+            pOD = ViewBag.pOD,
+            pWT = ViewBag.pWT,
+            pLength = ViewBag.pLength,
+            pGrade = ViewBag.pGrade,
+            pMaker = ViewBag.pMaker,
+            pStandardName = ViewBag.pStandardName,
+            pOrderBy = ViewBag.pOrderBy,
+            pSortBy = ViewBag.pSortBy,
+            pYearMonthFrom = ViewBag.pYearMonthFrom,
+            pYearMonthTo = ViewBag.pYearMonthTo
+        }))*@
+
+    @Html.PagedListPager((IPagedList)ViewBag.OnePageOfProducts, page => Url.Action("paging", new {
+            page = page
+        }))
+
+}
+
+<div class="modal fade" tabindex="-1" id="myModal" role="dialog">
+    <div class="modal-dialog" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h1 class="modal-title">@PSCS.Resources.PSC2010_cshtml.TitleDetail</h1>
+            </div>
+
+            <!-- PartialView -->
+            <div class="modal-body" id="Preview">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">@PSCS.Resources.PSC2010_cshtml.Button_Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>

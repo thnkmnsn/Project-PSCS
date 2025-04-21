@@ -1,0 +1,984 @@
+﻿@model PSCS.ModelsScreen.MovementScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC2210_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_thai_min.js"></script>
+    <script src="~/Scripts/SessionTimeout.js"></script>
+    <script language="javascript" type="text/javascript">
+        var LangTh = false;
+        var pTransId = "";
+        var pType = "";
+
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            
+            //$(e.target).closest('tr').find('td:nth-child(2)').text();
+
+            var strTrnasId = $(e.target).closest('tr').find('td:nth-child(5)').text();
+            var strType = $(e.target).closest('tr').find('td:nth-child(6)').text();
+
+            pTransId = strTrnasId;
+            pType = strType;
+
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+                $('#btnDelete').attr('disabled', 'disabled');
+
+                pTransId = "";
+                pType = "";
+            }
+            else {
+                $('.mvc-grid tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+                $('#btnDelete').removeAttr('disabled');
+
+                pTransId = strTrnasId;
+                pType = strType;
+            }
+        });
+
+        $('.mvc-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+
+        //$('.mvc-grid tr').on('rowclick', function (e) {
+        //    $('#hdnSelected').val("1");
+        //});
+
+        @*$(document).ready(function () {
+            var row = @Model.Total;
+            console.log(row);
+
+            if ("@Model.IsYardSupervisorRole" == "True")
+            {
+                $('#btnApprove').attr('style', 'display:none');
+                if (row > 0) {
+                    $('#btnSave').removeAttr('disabled', 'none');
+                } else {
+                    $('#btnSave').attr('disabled', 'none');
+                }
+            }
+            if ("@Model.IsControllerRole" == "True")
+            {
+                $('#btnSave').attr('style', 'display:none');
+                if (row > 0) {
+                    $('#btnApprove').removeAttr('disabled', 'none');
+                } else {
+                    $('#btnApprove').attr('disabled', 'none');
+                }
+            }
+        });*@
+
+        $(document).ready(function () {
+            if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true
+            }
+            else {
+                LangTh = false
+            }
+
+            $(".datepicker").datepicker_thai({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                langTh: LangTh,
+                yearTh: LangTh,
+            });
+
+            @*if ('@ViewBag.IsFilter' == "True") {
+
+                function RefreshPartial() {
+                //this will wait 3 seconds and then fire the load partial function
+                setTimeout(function () {
+                    loadPartialMoveLocation();
+
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("LoadData", "Movement")',
+                        contentType: 'application/json',
+                        data: JSON.stringify(),
+                        success: function () {
+                        },
+                        complete: function (xhr, status) {
+                            IsLogonRequired(xhr.responseText);
+                        }
+                    });
+
+                    //recall this function so that it will continue to loop
+                    RefreshPartial();
+                }, 3000); //8000
+            }
+            //initialize the loop
+            RefreshPartial();
+            }*@
+        });
+
+        $('#btnSave').click(function () {
+            $("#itemModal").modal("show");
+            $('#btnConfirm').show();
+            $('#btnDeleteM').hide();
+            $('#btnApproveM').hide();
+
+            return false;
+        });
+
+        $('#btnConfirm').on('click', function () {
+            //MsgSave();
+            //return false;
+            $(this).submit();
+        });
+
+        /*Delete Click*/
+        $('#btnDelete').click(function () {
+            $("#itemModal").modal("show");
+            $('#btnConfirm').hide();
+            $('#btnApproveM').hide();
+            $('#btnDeleteM').show();
+            return false;
+        });
+
+        $('#btnDeleteM').click(function () {
+            //if (confirm('@PSCS.Resources.Common_cshtml.DeleteConfirm')) {
+                $.ajax({
+                    type: "Get",
+                    url: '@Url.Action("DeleteMoveLocation", "Movement")',
+                    data: {
+                        pTransId: pTransId,
+                        pType: pType
+                    },
+                    success: function (data) {
+                        $('body').addClass('scroll');
+                        $('#Preview').html(data);
+                        $('#myModal').modal('show');
+                    },
+                    complete: function (xhr, status) {
+                        IsLogonRequired(xhr.responseText);
+                    }
+                })
+            //}
+        });
+
+        @*function MsgSave() {
+            var updateList = [];
+            var updateListDestination = [];
+            var rowsCount = $('.mvc-grid tbody tr').length;
+
+            //alert(rowsCount);
+            for (i = 0; i < rowsCount; i++) {
+                var txtRemark = $('.mvc-grid>tbody').find('tr').eq(i).find("#txtRemark");
+                var strRemark = '';
+                if (txtRemark != null) { strRemark = txtRemark.val();}
+                var updateData = {Remark: strRemark
+                };
+                updateList.push(updateData);
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Save_AjexOnClick", "Movement")',
+                contentType: 'application/json',
+                data: JSON.stringify({ pUpdateModel: updateList }),
+                success: function (reponse) {
+
+                    if (reponse.success) {
+
+                    }
+                    else {
+
+                    }
+                },
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+
+            });
+        }*@
+
+        @*function MsgSave() {
+            var updateList = [];
+            var updateListDestination = [];
+            var rowsCount = $('#my-tb tbody tr').length;
+
+            //alert(rowsCount);
+            for (i = 0; i < rowsCount; i++) {
+                var updateData = {
+                    Remark: $('#my-tb>tbody').find('tr').eq(i).find("#txtRemark").val()
+                };
+
+                updateList.push(updateData);
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Update_MoveLocationList", "Movement")',
+                contentType: 'application/json',
+                data: JSON.stringify({ pUpdateList: updateList }),
+                success: function (reponse) {
+
+                    if (reponse.success) {
+
+                    }
+                    else {
+
+                    }
+
+                    //new MvcGrid(document.querySelector('#GridVisor')).reload();
+                },
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+
+            });
+        }
+
+        /*Click Approve*/
+        $('#btnApprove').click(function () {
+            $("#itemModal").modal("show");
+            $('#btnConfirm').hide();
+            $('#btnDeleteM').hide();
+            $('#btnApproveM').show();
+
+            return false;
+        });
+
+        $('#btnApproveM').on('click', function () {
+            MsgApp();
+        });
+
+        function MsgApp() {
+            var updateList = [];
+
+            var rowsCount = $('#my-tb tbody tr').length;
+            var rows = $("#my-tb tbody").children();
+
+            for (i = 0; i < rowsCount; i++) {
+
+                var updateData = {
+                    Remark: $('#my-tb>tbody').find('tr').eq(i).find("#txtRemark").val()  ,Destination: rows[i].cells[12].innerText
+                };
+                updateList.push(updateData)
+
+            }
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("Approve_MoveLocationList", "Movement")',
+                contentType: 'application/json',
+                data: JSON.stringify({ pUpdateList: updateList}),
+                success: function (reponse) {
+
+                    if (reponse.success) {
+
+                    }
+                    else {
+
+                    }
+                    //new MvcGrid(document.querySelector('#GridVisor')).reload();
+                },
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        
+
+        @*function loadPartialMoveLocation() {
+            var rows = $("#my-tb tbody").children();
+
+            var strAllMoveId = "";
+            if (rows[0].cells.length > 1) {
+                for (var i = 0, rowLen = $("#my-tb tbody").children().length; i < rowLen; i++) {
+                    var strIndex = i;
+                    var strMoveId = rows[i].cells[1].innerText;
+
+                    loadPartialData(strIndex, strMoveId);
+                }
+
+                for (var i = 0, rowLen = $("#my-tb tbody").children().length; i < rowLen; i++) {
+                    strAllMoveId = strAllMoveId + ',' + rows[i].cells[1].innerText;
+                }
+            }
+
+            //loadNewRecord(strAllMoveId);
+        }
+
+        function loadPartialData(pIndex, pMoveId) {
+            $.ajax({
+                url: '@Url.Action("GetMoveLocationdata", "Movement")',
+                type: 'post',
+                cache: false,
+                async: true,
+                data: {
+                    pMoveId: pMoveId
+                },
+                success: function (result) {
+                    var str = result.split("*");
+
+                    //var rows = $("#my-tb tbody").children();
+                    //$(rows[pIndex]).closest('tr').find('td:nth-child(10)').text(str[0]);          //qty
+                    //$(rows[pIndex]).closest('tr').find('td:nth-child(11)').text(str[2]);          //destination name
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }*@
+
+        @*function loadNewRecord(strAllMoveId) {
+            var jsDate = $(".datepicker").val();
+
+            var e = document.getElementById("ddlYardId");
+            var strYardId = e.options[e.selectedIndex].value;
+            $.ajax({
+                url: '@Url.Action("GetMoveLocationdataNotMoveId", "Movement")',
+                type: 'post',
+                cache: false,
+                async: true,
+                data: {
+                    pAllMoveId: strAllMoveId,
+                    pMoveDate: jsDate,
+                    pYardId: strYardId
+                },
+                success: function (result) {
+                    if (result != "") {
+
+                        //check no data row
+                        var rows1 = $("#my-tb tbody").children();
+                        if (rows1[0].cells.length == 1) {
+
+                            rows1[0].remove();
+                        }
+
+                        var str = result.split("**");
+
+                        alert(str[0]);
+                        //alert(str[1]);
+                        //alert(str[2]);
+                        //alert(str[3]);
+                        //alert(str[4]);
+                        //alert(str[5]);
+                        //alert(str[6]);
+                        //alert(str[7]);
+                        //alert(str[8]);
+                        //alert(str[9]);
+                        //alert(str[10]);
+                        //alert(str[11]);
+
+                        if (str != '') {
+                            var rows = $("#my-tb tbody").children();
+
+                            var td;
+                            var tr = document.createElement('tr');
+                            var intRowNo = rows.length + 1;
+
+                            //1.RowNo
+                            td = document.createElement('td');
+                            td.className = "gridtext-center";
+                            td.innerHTML = intRowNo;
+                            //td.align = "center";
+                            tr.appendChild(td);
+
+                            //2.MoveId
+                            td = document.createElement('td');
+                            td.innerHTML = str[0];
+                            td.className = "hide";
+                            tr.appendChild(td);
+
+                            //3.MoveDate
+                            td = document.createElement('td');
+                            td.innerHTML = str[1];
+                            td.className = "hide";
+                            tr.appendChild(td);
+
+                            //4.ItemCode
+                            td = document.createElement('td');
+                            td.innerHTML = str[2];
+                            td.className = "hide";
+                            tr.appendChild(td);
+
+                            //5.HeatNo
+                            td = document.createElement('td');
+                            td.className = "gridtext-center";
+                            td.innerHTML = str[3];
+                            tr.appendChild(td);
+
+                            //6.Description
+                            td = document.createElement('td');
+                            td.className = "gridtext-center";
+                            td.innerHTML = str[9];
+                            tr.appendChild(td);
+
+                            //7.Time
+                            td = document.createElement('td');
+                            td.className = "gridtext-center";
+                            td.innerHTML = "";
+                            tr.appendChild(td);
+
+                            //8.Operation
+                            td = document.createElement('td');
+                            td.className = "gridtext-center";
+                            td.innerHTML = "";
+                            tr.appendChild(td);
+
+                            //9.LocationCodeFromName
+                            td = document.createElement('td');
+                            td.className = "gridtext-center";
+                            td.innerHTML = "";
+                            tr.appendChild(td);
+
+                            //10.QTY
+                            td = document.createElement('td');
+                            td.className = "gridtext-right";
+                            td.innerHTML = "";
+                            tr.appendChild(td);
+
+                            //11.LocationCodeToName
+                            td = document.createElement('td');
+                            td.className = "gridtext-center";
+                            td.innerHTML = "";
+                            tr.appendChild(td);
+
+                            //12.Diff
+                            td = document.createElement('td');
+                            td.className = "gridtext-center";
+                            td.innerHTML = "";
+                            tr.appendChild(td);
+
+                            //13.Remark
+                            var input = document.createElement('input');
+                            input.type = "text";
+                            input.className = "form-control edit edit-mode";
+                            input.id = "txtRemark";
+                            input.value = str[8];
+                            td = document.createElement('td');
+                            td.className = "gridtext-center";
+                            td.appendChild(input);
+                            tr.appendChild(td);
+
+                            $('#my-tb').append(tr);
+
+                            //Add child operation
+                            //var td2;
+                            //var tr2 = document.createElement('tr');
+                            //var intRowNo = rows.length + 1;
+                            ////1.RowNo
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-left-child";
+                            //td2.colSpan = "10";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+                            //$('#my-tb').append(tr2);
+
+                            ////Add child operation
+                            //var td2;
+                            //var tr2 = document.createElement('tr');
+                            //var intRowNo = rows.length + 1;
+                            ////1.RowNo
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-center";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+
+                            ////2.MoveId
+                            //td2 = document.createElement('td');
+                            //td2.innerHTML = "";
+                            //td2.className = "hide";
+                            //tr2.appendChild(td2);
+
+                            ////3.MoveDate
+                            //td2 = document.createElement('td');
+                            //td2.innerHTML = "";
+                            //td2.className = "hide";
+                            //tr2.appendChild(td2);
+
+                            ////4.ItemCode
+                            //td2 = document.createElement('td');
+                            //td2.innerHTML = "";
+                            //td2.className = "hide";
+                            //tr2.appendChild(td2);
+
+                            ////5.HeatNo
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-center";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+
+                            ////6.Description
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-center";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+
+                            ////7.Time
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-center";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+
+                            ////8.Operation
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-center";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+
+                            ////9.LocationCodeFromName
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-center";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+
+                            ////10.QTY
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-right";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+
+                            ////11.LocationCodeToName
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-center";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+
+                            ////12.Diff
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-center";
+                            //td2.innerHTML = "";
+                            //tr2.appendChild(td2);
+
+                            ////13.Remark
+                            //var input = document.createElement('input');
+                            //input.type = "text";
+                            //input.className = "form-control edit edit-mode";
+                            //input.id = "txtRemark";
+                            //input.value = str[8];
+                            //td2 = document.createElement('td');
+                            //td2.className = "gridtext-center";
+                            //td2.appendChild(input);
+                            //tr2.appendChild(td2);
+
+                            //$('#my-tb').append(tr2);
+                        }
+
+                        $('#totaltext').text("Total: " + intRowNo + " Item(s)");
+
+                        if (intRowNo > 0) {
+                            $('#btnSave').removeAttr('disabled', 'disabled');
+                            $('#btnApprove').removeAttr('disabled', 'disabled');
+                        } else {
+                            $('#btnSave').attr('disabled', 'disabled');
+                            $('#btnApprove').attr('disabled', 'disabled');
+                        }
+
+                        tr.onclick = (function () {
+                            //var id = $(e.target).closest('tr').find('td:nth-child(1)').text();
+                            if ($(tr).hasClass('selected')) {
+                                $(tr).removeClass('selected');
+                                $('#btnDelete').attr('disabled', 'disabled');
+                                pId = "";
+                            }
+                            else {
+                                $('.mvc-grid tr.selected').removeClass('selected');
+                                $(tr).addClass('selected');
+                                $('#btnDelete').removeAttr('disabled');
+                                console.log(str[0]);
+                                pId = str[0];
+                            }
+                        })
+                    }
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }*@
+
+    </script>
+}
+
+<style>
+    .divgrid-rowno {
+        width: 50px;
+        text-align: center;
+    }
+
+    .divgrid-qty {
+        width: 50px;
+        text-align: center;
+    }
+
+    .divgrid-date {
+        width: 130px;
+        text-wrap: none;
+    }
+
+    .divgrid-container {
+        width: 150px;
+    }
+
+    .divgrid-heat {
+        width: 150px;
+    }
+
+    .divgrid-numeric {
+        width: 80px;
+        text-align: right;
+    }
+
+    .divgrid-yard {
+        width: 150px;
+    }
+
+    .divgrid-location {
+        width: 150px;
+    }
+
+    .selected {
+        background-color: #B0BED9;
+    }
+
+    #my-tb th {
+        text-align: center;
+    }
+    /*.table-hover > tbody > tr:hover.selected > td,
+    .table-hover > tbody > tr:hover.selected > th {
+        background-color: #aab7d1;
+    }*/
+    
+    .rowSaved {
+        background-color: #F0FFF0;
+        /*#90EE90*/
+    }
+
+    .rowDiff {
+        background-color: #FFF0F5;
+        /*#F08080*/
+    }
+</style>
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC2210_cshtml.Title</h1>
+
+@using (Html.BeginForm("PSC2210", "Movement", FormMethod.Post))
+{
+<table border="0" cellSpacing="0" cellPadding="0" width="100%">
+    <!-- Alert Area  -->
+    <tr>
+        <td>
+            <div id="divID" class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                {
+                    <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                }
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                {
+                    <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                }
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                {
+                    <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                }
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                {
+                    <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                }
+                <strong id="strongId"> </strong>
+                <label id="lblId" calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+            </div>
+        </td>
+    </tr>
+    <!-- Button area -->
+    <tr>
+        <th>
+            <table align="right">
+                <tr>
+                    <th>
+                        <Button id="btnSave" name="submitButton" value="Save1" class="btn btn-large btn-green">@PSCS.Resources.PSC2211_cshtml.Button_Save</Button>
+                        @*<Button id="btnApprove" value=Approve class="btn btn-large btn-red">@PSCS.Resources.PSC2211_cshtml.Button_Approve</Button>*@
+                        <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                    </th>
+                </tr>
+            </table>
+        </th>
+    </tr>
+    <!-- Space area -->
+    <tr>
+        <th height="5px"></th>
+    </tr>
+    <!-- Total area -->
+    <tr>
+        <th>
+            <table align="right">
+                <tr>
+                    <th>
+                        <p id="totaltext">@PSCS.Resources.Common_cshtml.Total: @Html.DisplayFor(model => model.Total)  @PSCS.Resources.Common_cshtml.Item</p>
+                    </th>
+                </tr>
+            </table>
+        </th>
+    </tr>
+    <!-- Criteria area -->
+    <tr>
+        <th>
+            <table border="0" cellSpacing="0" cellPadding="0">
+
+                <tr>
+                    <th>
+                        <table border="0" cellSpacing="0" cellPadding="0">
+                            <tr>
+                                <th width="200px">
+                                    <label class="textbox-caption">@PSCS.Resources.PSC2210_cshtml.FilterMoveLocationDate</label>
+                                </th>
+                                <th width="150px">
+                                    @*@Html.EditorFor(m => m.FilterInternalMoveDate, new { htmlAttributes = new { @class = "datepicker row", @readonly = "readonly", @style = "height:25px; width:100px;", onchange = "ClearFilter();" } })*@
+                                    @Html.EditorFor(m => m.FilterInternalMoveDate, new { htmlAttributes = new { @class = "datepicker row", @readonly = "readonly", @style = "height:25px; width:100px;", /*onchange = @"form.submit();"*/ } })
+                                </th>
+                                <th width="60px">
+                                    <label class="textbox-caption">@PSCS.Resources.PSC2210_cshtml.FilterYard</label>
+                                </th>
+                                <th width="170px">
+                                    @*@Html.DropDownListFor(m => m.FilterYardID, Model.YardList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;", id = "ddlYardId", onchange = @"form.submit();" })*@
+                                    @Html.DropDownListFor(m => m.FilterYardID, Model.YardList, @PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;", id = "ddlYardId", /*onchange = @"form.submit();"*/ })
+                                </th>
+                                <!-- Button -->
+                                <th width="140px">
+                                    <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large">Filter</Button>
+                                </th>
+                            </tr>
+                        </table>
+                    </th>
+                </tr>
+                <tr>
+                    <th height="15px"></th>
+                </tr>
+                <tr>
+                    <th height="5px"></th>
+                </tr>
+            </table>
+        </th>
+    </tr>
+    <!-- Space area -->
+    <tr>
+        <th height="10px"></th>
+    </tr>
+    <!-- Delete Button area -->
+    <tr>
+        <th>
+            <table align="left">
+                <tr>
+                    <th>
+                        <Button id="btnDelete" value="Delete" class="btn btn-large btn-red" disabled="disabled">@PSCS.Resources.PSC2211_cshtml.Button_Delete</Button>
+                    </th>
+                </tr>
+            </table>
+        </th>
+    </tr>
+    <!-- Space area -->
+    <tr>
+        <th height="10px"></th>
+    </tr>
+    <!--Grid Area -->
+    @*<tr>
+            <th>
+                @(Html
+                            .Grid(Model.MoveLocationList)
+                            .Build(columns =>
+                            {
+                                columns.Add(model => model.RowNoDisplay).Titled(@PSCS.Resources.PSC2210_cshtml.GridRowNo).Css("gridtext-center");
+                                columns.Add(model => model.MoveId).AppendCss("hide");
+                                columns.Add(model => model.MoveDate).AppendCss("hide");
+                                columns.Add(model => model.ItemCode).AppendCss("hide");
+                                columns.Add(model => model.HeatNo).Titled(@PSCS.Resources.PSC2210_cshtml.GridHeatNo).Css("gridtext-left");
+                                columns.Add(model => model.Description).Titled(@PSCS.Resources.PSC2210_cshtml.GridDescription).Css("gridtext-left");
+                                columns.Add(model => model.TimeDisplay).Titled(@PSCS.Resources.PSC2210_cshtml.GridTime).Css("gridtext-left");
+                                columns.Add(model => model.Operation).Titled(@PSCS.Resources.PSC2210_cshtml.GridOperation).Css("gridtext-left");
+                                columns.Add(model => model.LocationCodeFromNameDisplay).Titled(@PSCS.Resources.PSC2210_cshtml.GridLocationFrom).Css("gridtext-center");
+                                columns.Add(model => model.QTY).Formatted("{0:#,##0}").Titled(@PSCS.Resources.PSC2210_cshtml.GridQTY).Css("gridtext-right");
+                                columns.Add(model => model.LocationCodeToNameDisplay).Titled(@PSCS.Resources.PSC2210_cshtml.GridLocationTo).Css("gridtext-center");
+                                columns.Add(model => model.QTYDifferent).Titled(@PSCS.Resources.PSC2210_cshtml.GridDifferent).Css("gridtext-right");
+                                columns.Add(model => "<input id='txtRemark' class='form-control edit edit-mode' value=\"" + model.Remark + "\" autocomplete='off' />")
+                                                        .Titled(@PSCS.Resources.PSC2210_cshtml.GridRemark).Encoded(false).Css("gridtext-center");
+                            })
+                            .Css("table-hover")
+                            .Attributed(new { id = "my-tb" })
+                            .Id("divTb")
+                            .Empty(@PSCS.Resources.Common_cshtml.NoDataFound)
+                            .Sortable()
+                )
+            </th>
+        </tr>*@
+    <!-- Body : Detail -->
+    <tr>
+        <th>
+            <div id="divTb" class="mvc-grid">
+                <table id="my-tb">
+                    <thead>
+                        <tr>
+                            @*<th>@PSCS.Resources.PSC2411_cshtml.GridSelect</th>*@
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridRowNo</th>
+                            <th class="hide">MoveId</th>
+                            <th class="hide">MoveDate</th>
+                            <th class="hide">ItemCode</th>
+                            <th class="hide">HHTTransId</th>
+                            <th class="hide">Type</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridHeatNo</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridDescription</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridTime</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridOperation</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridLocationFrom</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridQTY</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridLocationTo</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridDifferent</th>
+                            <th class="gridtext-center"style="width:120px">@PSCS.Resources.PSC2210_cshtml.GridProductName</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridMfgNo</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridOperator</th>
+                            <th class="gridtext-center">@PSCS.Resources.PSC2210_cshtml.GridRemark</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grid_body">
+                        @for (int i = 0; i < Model.MoveLocationList.Count; i++)
+                        {
+                            <tr class="@Model.MoveLocationList[i].CellCss">
+                                <td class="gridtext-center">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].RowNoDisplay)
+                                    @Html.HiddenFor(x => Model.MoveLocationList[i].MoveId, new { @id = "hdnRecevedID" })
+                                    @Html.HiddenFor(x => Model.MoveLocationList[i].MoveDate, new { @id = "hdnItemCode" })
+                                    @Html.HiddenFor(x => Model.MoveLocationList[i].ItemCode, new { @id = "hdnHeatNo" })
+                                </td>
+                                <td class="hide">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].MoveId)
+                                </td>
+                                <td class="hide">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].MoveDate)
+                                </td>
+                                <td class="hide">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].ItemCode)
+                                </td>
+                                <td class="hide">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].HHTTransId)
+                                </td>
+                                <td class="hide">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].Type)
+                                </td>
+                                <td class="gridtext-left">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].HeatNoDisplay)
+                                </td>
+                                <td class="gridtext-left">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].Description)
+                                </td>
+                                <td class="gridtext-left">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].TimeDisplay)
+                                </td>
+                                <td class="gridtext-left">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].Operation)
+                                </td>
+                                <td class="gridtext-left">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].LocationCodeFromNameDisplay)
+                                </td>
+                                <td class="gridtext-right">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].HHTTransQTY)
+                                </td>
+                                <td class="gridtext-left">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].LocationCodeToNameDisplay)
+                                </td>
+                                <td class="gridtext-right">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].QTYDifferent)
+                                </td>
+                                <td class="gridtext-left">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].ProductName)
+                                </td>
+                                <td class="gridtext-left" style="width:200px;font-size=14px" >
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].MfgNo)
+                                </td>
+                                <td class="gridtext-center">
+                                    @Html.DisplayFor(x => Model.MoveLocationList[i].Operator)
+                                </td>
+                                <td class="gridtext-center">
+                                    @if (Model.MoveLocationList[i].MoveId > 0)
+                                    {
+                                        @Html.EditorFor(x => Model.MoveLocationList[i].Remark, new { htmlAttributes = new { @id = "txtRemark", @style = "height:25px; width:150px;" } })
+
+                                        //@Html.DisplayFor(x => "<input id='txtRemark' class='form-control edit edit-mode' value=\"" + Model.MoveLocationList[i].Remark + "\" autocomplete='off' />")
+                                        //@Html.EditorFor(x => Model.MoveLocationList[i].Remark, new { @class = "form-control edit edit-mode", htmlAttributes = new { @id = "txtRemark", @style = "height:32px; width:200px;" }, autocomplete = "off" })
+                                    }
+
+                                </td>
+                            </tr>
+                        }
+                        @if (Model.MoveLocationList == null || Model.MoveLocationList.Count == 0)
+                        {
+                            <tr class="mvc-grid-empty-row">
+                                <td colspan="10">
+                                    No data found
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </th>
+    </tr>
+</table>
+
+    //add ConfirmDialog
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirm" name="submitButton" value="Save" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                    <Button id="btnApproveM" name="submitButton" value="Approve" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                    <Button id="btnDeleteM" name="submitButton" value="Delete" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+

@@ -1,0 +1,514 @@
+﻿@model PSCS.ModelsScreen.StockCheckScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@{
+    ViewBag.Title = PSCS.Resources.PSC2310_cshtml.TitleAdjust;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_thai_min.js"></script>
+    <script src="~/Scripts/SessionTimeout.js"></script>
+    <script language="javascript" type="text/javascript">
+        var pRowNo = "";
+        var overflow = false;
+        var LangTh = false;
+
+        $(function () {
+            InitialView();
+
+         if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true
+            }
+            else {
+                LangTh = false
+            }
+
+            $(".datepicker").datepicker_thai({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                langTh: LangTh,
+                yearTh: LangTh,
+            });
+
+            @*var status = "";
+            if ('@Session["Role"]' == 'Manager') {
+                //$('#ddlStatus').prop('disabled', true);
+                status = "5";
+            }
+            else if ('@Session["Role"]' == 'Controller') {
+                $('#ddlStatus').prop('disabled', false);
+                status = "4";
+            }*@
+
+            SessionTimeoutCheck("StockCheck");
+
+            var grid = new MvcGrid(document.querySelector('#GridAdjust'));
+            grid.query.set('pStatus', status);
+            grid.reload();
+
+            // refresh Total
+            UpdateTotal();
+
+            InitialView();
+        });
+
+        function InitialView() {
+            $('#divID').removeClass().addClass("hide");
+            $('#strongId').text("");
+            $('#lblId').text("");
+        }
+
+        // Filter click
+        $('#btnFilter').click(function () {
+            console.log($('#ddlStatus').val());
+
+            // Only Approve and Adjust can use this screen filter
+            if ($('#ddlStatus').val() == 4 || $('#ddlStatus').val() == 5) {
+                SessionTimeoutCheck("StockCheck");
+
+                // refresh Grid
+                var grid = new MvcGrid(document.querySelector('#GridAdjust'));
+                grid.query.set('pDate', $('#FilterStockDate').val());
+                grid.query.set('pPipeYard', $('#ddlPipeYard').val());
+                grid.query.set('pStatus', $('#ddlStatus').val());
+                grid.reload();
+
+                // refresh Total
+                UpdateTotal();
+
+                InitialView();
+            }
+            else {
+                console.log("MNG");
+                window.location.href = '@Url.Action("PSC2310_Adjust", "StockCheck")';
+            }
+        });
+
+
+         // Adjust click  //btnReject Reject btnMngApprove
+        //$('#btnAdjust').click(function () {
+        function Adjust() {
+            var _id = $('#Selected').val();
+            var _Action = "Adjust";
+
+            InitialView();
+
+            $("#itemModal").modal("hide");
+            $.ajax({
+                url: "/StockCheck/Adjust_StockAdjustList/",
+                type: "POST",
+                dataType: "JSON",
+                data: { Selected: _id, submitButton: _Action },
+                success: function (reponse) {
+                    console.log(reponse);
+
+                    SessionTimeoutCheck("StockCheck");
+
+                    if (reponse.success) {
+                        $('#divID').addClass("show alert alert-success");
+                        $('#strongId').text("@PSCS.Resources.Common_cshtml.Success");
+                        $('#lblId').text(reponse.message);
+                    }
+                    else {
+                        $('#divID').addClass("show alert alert-danger");
+
+                        $('#strongId').text("@PSCS.Resources.Common_cshtml.Error"+" "+"@PSCS.Resources.PSC2310_cshtml.AdjustError");
+                        $('#lblId').text(reponse.message);
+                    }
+
+                    new MvcGrid(document.querySelector('#GridAdjust')).reload();
+
+                    // refresh Total
+                    UpdateTotal();
+                },
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+                    $('#divID').addClass("show alert alert-danger");
+                    $('#strongId').text("@PSCS.Resources.Common_cshtml.Error");
+                    $('#lblId').text(customErrorMessage);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        // Reject click
+        //$('#btnReject').click(function () {
+        function Reject() {
+            var _id = $('#Selected').val();
+            var _Action = "Reject";
+
+            InitialView();
+
+            $("#itemModal").modal("hide");
+            $.ajax({
+                url: "/StockCheck/Adjust_StockAdjustList/",
+                type: "POST",
+                dataType: "JSON",
+                data: { Selected: _id, submitButton: _Action },
+                success: function (reponse) {
+                    SessionTimeoutCheck("StockCheck");
+
+                    if (reponse.success) {
+                        $('#divID').addClass("show alert alert-success");
+                        $('#strongId').text("@PSCS.Resources.Common_cshtml.Success");
+                        $('#lblId').text(reponse.message);
+                    }
+                    else {
+                        $('#divID').addClass("show alert alert-danger");
+                        $('#strongId').text("@PSCS.Resources.Common_cshtml.Error");
+                        $('#lblId').text(reponse.message);
+                    }
+
+                    new MvcGrid(document.querySelector('#GridAdjust')).reload();
+
+                    // refresh Total
+                    UpdateTotal();
+                },
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+                    $('#divID').addClass("show alert alert-danger");
+                    $('#strongId').text("@PSCS.Resources.Common_cshtml.Error");
+                    $('#lblId').text(customErrorMessage);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        // Approve click
+        //$('#btnMngApprove').click(function () {
+        function MngApprove() {
+            var _id = $('#Selected').val();
+            var _Action = "Approve";
+
+            InitialView();
+
+            $("#itemModal").modal("hide");
+            $.ajax({
+                url: "/StockCheck/Adjust_StockAdjustList/",
+                type: "POST",
+                dataType: "JSON",
+                data: { Selected: _id, submitButton: _Action },
+                success: function (reponse) {
+                    SessionTimeoutCheck("StockCheck");
+
+                    if (reponse.success) {
+                        $('#divID').addClass("show alert alert-success");
+                        $('#strongId').text("@PSCS.Resources.Common_cshtml.Success");
+                        $('#lblId').text(reponse.message);
+                    }
+                    else {
+                        $('#divID').addClass("show alert alert-danger");
+                        $('#strongId').text("@PSCS.Resources.Common_cshtml.Error");
+                        $('#lblId').text(reponse.message);
+                    }
+
+                    new MvcGrid(document.querySelector('#GridAdjust')).reload();
+
+                    // refresh Total
+                    UpdateTotal();
+                },
+                error: function (xhr, httpStatusMessage, customErrorMessage) {
+                    $('#divID').addClass("show alert alert-danger");
+                    $('#strongId').text("@PSCS.Resources.Common_cshtml.Error");
+                    $('#lblId').text(customErrorMessage);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        // Grid: Checkbox All click
+        $(document).on("click", "#CheckAll", function (e) {
+            var chk = $(this).is(':checked');
+            $('input[type=checkbox]', ".mvc-grid tr").each(function () {
+                if (chk) {
+                    $(this).prop('checked', true);
+                }
+                else {
+                    $(this).prop("checked", false);
+                }
+            });
+        });
+
+        // Grid: Checkbox click
+        $(document).on("click", '.mvc-grid tr', function (e) {
+            var arr = $('input[type=checkbox]:checked', ".mvc-grid tr").map(function () {
+                return $(this).val();
+            }).get();
+
+            $('#Selected').val(arr);
+            AdjustCheckAllbtn();
+        });
+
+        function UpdateTotal() {
+            $.ajax({
+                url: "/StockCheck/UpdateTotal_Adjust/",
+                type: "GET",
+                dataType: "JSON",
+                data: {},
+                success: function (response) {
+                    if (parseInt(response) > 0) {
+                        $('#btnAdjust').removeAttr('disabled', 'disabled');
+                        $('#btnMngApprove').removeAttr('disabled', 'disabled');
+                        $('#btnReject').removeAttr('disabled', 'disabled');
+                    } else {
+                        $('#btnAdjust').attr('disabled', 'disabled');
+                        $('#btnMngApprove').attr('disabled', 'disabled');
+                        $('#btnReject').attr('disabled', 'disabled');
+                    }
+
+                    setTimeout(function () {
+                        $("#Totalitem").text(response);
+                    }, 75);
+                },
+                error: function (reponse) {
+                    //alert("error : " + reponse);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+        }
+
+        function AdjustCheckAllbtn() {
+            var bb = true;
+            $('input[type=checkbox]', ".mvc-grid tr").map(function () {
+                if (!$(this).is(':checked') && $(this).val() != 'true') {
+                    bb = false;
+                    return bb;
+                }
+            });
+
+            $('#CheckAll', ".mvc-grid th").prop('checked', bb);
+        }
+
+        $(document).on("click", '#GridVisor.mvc-grid th', function (e) {
+            e.stopPropagation();
+        });
+
+        $(document).on("click", '#GridVisor.mvc-grid tr', function (e) {
+            e.stopPropagation();
+        });
+
+        //// Patial view: Dropdown list change
+        //$(document).on("change", "#ddlStatus", function (e) {
+        //    var Status = $('#ddlStatus').val();
+        //    console.log(Status);
+        //});
+
+        $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });
+
+        @*$(document).ready(function () {
+            var row = @Model.Total
+            console.log(row);
+            if (row > 0) {
+                $('#btnAdjust').removeAttr('disabled', 'disabled');
+            } else {
+                $('#btnAdjust').attr('disabled', 'disabled');
+            }
+        });*@
+
+        $('#btnAdjust').on('click', function () {
+            $("#btnConfirm").attr('onclick', 'Adjust();');
+            $("#itemModal").modal("show");
+            return false;
+        });
+        $('#btnMngApprove').on('click', function () {
+            $("#btnConfirm").attr('onclick', 'MngApprove();');
+            $("#itemModal").modal("show");
+            return false;
+        });
+        $('#btnReject').on('click', function () {
+            $("#btnConfirm").attr('onclick', 'Reject();');
+            $("#itemModal").modal("show");
+            return false;
+        });
+    </script>
+}
+
+<style>
+    .selected {
+        background-color: #B0BED9;
+    }
+
+    .table-hover > tbody > tr:hover.selected > td,
+    .table-hover > tbody > tr:hover.selected > th {
+        background-color: #aab7d1;
+    }
+</style>
+
+<!-- Title -->
+<h1 class="H1"> @PSCS.Resources.PSC2310_cshtml.TitleAdjust</h1>
+@using (Html.BeginForm("PSC2310_Adjust", "StockCheck", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div id="divID" class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")">
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+
+                    <strong id="strongId"> </strong>
+                    <label id="lblId" calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Button Area  -->
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            @if (Session["Role"].ToString() == "Manager")
+                            {
+                                <Button id="btnReject" type="button" value="Reject" class="btn btn-large btn-orange" @Html.DisplayFor(model => model.isDisable)>@PSCS.Resources.PSC2310_cshtml.Button_Reject</Button>
+                                <Button id="btnMngApprove" type="button" value="Approve" class="btn btn-large btn-red" @Html.DisplayFor(model => model.isDisable)>@PSCS.Resources.PSC2310_cshtml.Button_Approve</Button>
+                            }
+                            else
+                            {
+                                <Button id="btnAdjust" type="button" value="Adjust" class="btn btn-large btn-orange" @Html.DisplayFor(model => model.isDisable)>@PSCS.Resources.PSC2310_cshtml.Button_Adjust</Button>
+                            }
+                            <Button id="btnClearFilter" name="submitButton" value="ClearFilter" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_ClearFilter</Button>
+                            <Button id="btnBack" type="button" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.PSC2310_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <p>@PSCS.Resources.Common_cshtml.Total: <label id="Totalitem">  @Html.DisplayFor(model => model.Total)  </label> @PSCS.Resources.Common_cshtml.Item</p>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+
+        <!-- Criteria area -->
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    @Html.Hidden("Selected")
+
+                                    <!-- Stock Check Date -->
+                                    <th width="140px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_StockCheckDate</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.EditorFor(m => m.FilterStockDate, new { htmlAttributes = new { @class = "datepicker row", @readonly = "readonly" } })
+                                    </th>
+
+                                    <!-- Yard -->
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filter_Yard</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.FilterPipeYard, Model.PipeYardList, @PSCS.Resources.Common_cshtml.All, (object)new { @id = "ddlPipeYard", @style = "height:25px; width:120px;" })
+                                    </th>
+
+                                    <!-- Status -->
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2310_cshtml.Filtter_Status</label>
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.FilterStatus, Model.StatusList, @PSCS.Resources.Common_cshtml.All, (object)new { @id = "ddlStatus", @style = "height:25px; width:120px;" })
+                                    </th>
+
+                                    <!-- Button -->
+                                    <th width="140px">
+                                        <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large">@PSCS.Resources.PSC2310_cshtml.Button_Filter</Button>
+                                        @*<Button id="btnClearFilter" name="submitButton" value="ClearFilter" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_ClearFilter</Button>*@
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="20px"></th>
+        </tr>
+
+        <!--Grid Area -->
+        <tr>
+            <th>
+                @Html.AjaxGrid(Url.Action("PSC2310AdjustTable"), new { id = "GridAdjust" })
+            </th>
+        </tr>
+    </table>
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirm" type="button" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

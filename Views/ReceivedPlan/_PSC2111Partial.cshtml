@@ -1,0 +1,91 @@
+﻿@model PSCS.ModelsScreen.ReceivedPlanDetailScreen
+@{
+    ViewBag.Title = PSCS.Resources.PSC2111_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using (Html.BeginForm("PSC2111", "ReceivedPlan", FormMethod.Post))
+{
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <div class="datails @(
+                        @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                        @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                        @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert=info" :
+                        @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                        @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide"
+               )">
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <lable class="field-validation-error">@Html.DisplayFor(model => model.Message)</lable>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="mvc-grid">
+                    <table id="part-td" class="table-hover">
+                        <thead>
+                            <tr>
+                                <th>@PSCS.Resources.PSC2111_cshtml.Grid_RowNo</th>
+                                <th>@PSCS.Resources.PSC2111_cshtml.Grid_Description</th>
+                                <th>@PSCS.Resources.PSC2111_cshtml.Grid_ActualQty</th>
+                                <th>@PSCS.Resources.PSC2111_cshtml.Grid_Location</th>
+                                <th>@PSCS.Resources.PSC2111_cshtml.Grid_ChangeQty</th>
+                                <th>@PSCS.Resources.PSC2111_cshtml.Grid_ChangeLocation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grid_body">
+                            @for (int i = 0; i < Model.ReceivingInstructionDetailList.Count; i++)
+                            {
+                                <tr>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].RowNo)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].Description)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].ActualQty)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].LocationCode)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].LocationName)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].ChangeLocationCode)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].ChangeLocationName)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.ReceivingInstructionDetailList[i].ChangeQty)
+                                    </td>
+                                </tr>
+                            }
+                            <tr>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+}

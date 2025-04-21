@@ -1,0 +1,381 @@
+﻿@model PSCS.ModelsScreen.StockTakingScreen
+@*@model PSCS.ModelsScreen.ImportExcelScreen*@
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@*<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>*@
+
+@{
+    ViewBag.Title = "PSCS - %PSC2510%";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    @*@*<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>*@
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+        //@Html.Raw(ViewBag.StartupScript)
+
+        $(document).ready(function () {
+            //document.getElementById("errorMsgBox").style.display = "none";
+            var yardId = @Html.Raw(Json.Encode(ViewData["YardId"]));
+            if (yardId) {
+                GetLocation(yardId);
+            }
+        });
+
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            var status = $(e.target).closest('tr').find('td:nth-child(14)').text();
+            if(status != null || status != "")
+            {
+                var box = $('#errorMsgBox');
+
+                if (status == "New" || status == "Adjust") {
+                    box.html("")
+                    box.removeClass("alert alert-danger");
+
+                    $("#hiddenRowNo").val($(e.target).closest('tr').find('td:nth-child(2)').text());
+                    $("#itemCode").val($(e.target).closest('tr').find('td:nth-child(5)').text());
+                    $("#heatNo").val($(e.target).closest('tr').find('td:nth-child(6)').text());
+                    $("#od").val($(e.target).closest('tr').find('td:nth-child(7)').text());
+                    $("#wt").val($(e.target).closest('tr').find('td:nth-child(8)').text());
+                    $("#lt").val($(e.target).closest('tr').find('td:nth-child(9)').text());
+                    $("#actualQTY").val($(e.target).children("td:nth-child(13)").text());
+                    $("#itemModal").modal("show");
+                }
+                else if (status == "Submit") {
+                    //alert("Cannot change Actual Qty because this stocktaking data is submitted already. Please contact GM or Mgr if you need correct Actual Qty.");
+                    box.html("Cannot change Actual Qty because this stocktaking data is submitted already. Please contact GM or Mgr if you need correct Actual Qty.")
+                    box.addClass("alert alert-danger");
+                }
+                else if (status == "Approve") {
+                    //alert("Cannot change Actual Qty because this stocktaking data is Approved already.");
+                    box.html("Cannot change Actual Qty because this stocktaking data is Approved already.")
+                    box.addClass("alert alert-danger");
+                }
+            }
+        });
+
+        $('.mvc-grid td').click(function (e) {
+            var col = this.cellIndex;
+            if (col == 0) {
+                e.stopPropagation();
+                //e.preventDefault();
+            }
+        });
+
+        $('.mvc-grid th').click(function (e) {
+            var col = this.cellIndex;
+            if (col == 0) {
+                e.stopPropagation();
+                //e.preventDefault();
+            }
+        });
+
+        $('#CheckAll').click(function () {
+            var chk = $(this).is(':checked');
+            var cnt = $('input[type=checkbox]', ".mvc-grid tr").length;
+            $('input[type=checkbox]', ".mvc-grid tr").each(function () {
+                if (chk) {
+                    $(this).prop('checked', true);
+                }
+                else {
+                    $(this).prop("checked", false);
+                    //$(this).removeAttr('checked');
+                }
+            });
+        });
+
+        //document.getElementById('CheckAll').addEventListener('change', function () {
+        //    var checked = this.checked;
+        //    [].forEach.call(document.querySelectorAll('[id^="Check"'), function (checkbox) {
+        //        checkbox.checked = checked;
+        //    });
+        //});
+
+
+        $(function () {
+            $(".datepicker").datepicker({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+            });
+        });
+    </script>
+
+}
+
+<style>
+    .gridtext-right {
+        text-align: right;
+    }
+
+    .gridtext-center {
+        text-align: center;
+    }
+</style>
+
+<h1 class="H1">Stocktaking instruction</h1>
+@using (Html.BeginForm("PSC2510", "StockTaking", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            @if (ViewBag.IsAdmin == true || ViewBag.IsEditor == true)
+                            {
+                                <Button class="btn btn-large btn-purple" id="btnImport" formaction="PSC2511">Import</Button>
+                                <Button class="btn btn-large btn-skyblue" id="btnExport" formaction="Export">Export</Button>
+                                <Button id="btnSave" name="submitButton" value="Save" class="btn btn-large btn-green" @((Model.SaveDisable == true) ? "disabled" : "")>Save</Button>
+                                <Button id="btnSubmit" name="submitButton" value="Submit" class="btn btn-large btn-lime" @((Model.SubmitDisable == true) ? "disabled" : "")>Submit</Button>
+                            }
+                            @if (ViewBag.IsAdmin == true || ViewBag.IsManager == true)
+                            {
+                                <Button id="btnAdjust" name="submitButton" value="Adjust" class="btn btn-large btn-orange" @((Model.AdjustDisable == true) ? "disabled" : "")>Adjust</Button>
+                                <Button id="btnApprove" name="submitButton" value="Approve" class="btn btn-large btn-red" @((Model.ApproveDisable == true) ? "disabled" : "")>Approve</Button>
+                            }
+                        </th>
+                        <th style="padding-left: 25px;">
+                            <Button id="btnDelete" name="submitButton" value="Delete" class="btn btn-large btn-basic">Delete</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="20px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="105px">
+                                        <label class="textbox-caption">Year-Month</label>
+                                    </th>
+                                    <th width="120px">
+                                        @Html.EditorFor(m => m.StockTakingDate, new { htmlAttributes = new { @class = "datepicker row", @readonly = "readonly" } })
+                                    </th>
+                                    <th width="70px">
+                                        @Html.Label("Pipe yard", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.FilterYardID, Model.YardList, "All", new { @style = "height:25px; width:120px;", onchange = "document.forms[0].submit();" })
+                                    </th>
+                                    <th width="70px">
+                                        @Html.Label("Location", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="130px">
+                                        @Html.DropDownListFor(m => m.FilterLocationID, Model.LocationList, "All", new { @style = "height:25px; width:120px;" })
+                                    </th>
+                                    <th width="100px">
+                                        @Html.Label("Item Code", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="170px">
+                                        @Html.Editor("ItemCode", new { htmlAttributes = new { @class = "textbox-150" } })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="70px">
+                                        @Html.Label("Heat No", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="120px">
+                                        @Html.Editor("HeatNo", new { htmlAttributes = new { @class = "textbox-100" } })
+                                    </th>
+                                    <th width="40px">
+                                        @Html.Label("OD", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="70px">
+                                        @Html.Editor("OD", new { htmlAttributes = new { @class = "textbox-50" } })
+                                    </th>
+                                    <th width="40px">
+                                        @Html.Label("WT", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="70px">
+                                        @Html.Editor("WT", new { htmlAttributes = new { @class = "textbox-50" } })
+                                    </th>
+                                    <th width="50px">
+                                        @Html.Label("Length", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="70px">
+                                        @Html.Editor("Length", new { htmlAttributes = new { @class = "textbox-50" } })
+                                    </th>
+                                    <th width="50px">
+                                        @Html.Label("Grade", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="70px">
+                                        @Html.Editor("Grade", new { htmlAttributes = new { @class = "textbox-50" } })
+                                    </th>
+                                    <th width="50px">
+                                        @Html.Label("Maker", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="120px">
+                                        @Html.Editor("Maker", new { htmlAttributes = new { @class = "textbox-100" } })
+                                    </th>
+                                    <th width="60px">
+                                        @Html.Label("Status", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="70px">
+                                        @Html.Label("Weight", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="120px">
+                                        @Html.Editor("Weight", new { htmlAttributes = new { @class = "textbox-100" } })
+                                    </th>
+                                    <th width="130px">
+                                        @*@Html.DropDownList("Status", new List<SelectListItem>
+            {
+               new SelectListItem{ Text="New", Value = "1" },
+               new SelectListItem{ Text="Submit", Value = "2" },
+               new SelectListItem{ Text="Approve", Value = "3" },
+            }, new { @class = "dropdown-100" })*@
+
+                                        @Html.DropDownListFor(m => m.FilterStatus, Model.StatusList, "All", new { @style = "height:25px; width:120px;" })
+                                    </th>
+                                    <th width="140px">
+                                        <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large btnCustom5">Filter</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <tr>
+            <th>
+                @(Html
+                                .Grid(Model.DataList)
+                                .Build(columns =>
+                                {
+                                    columns.Add(model => Html.CheckBox("Check_" + model.RowNo)).Titled(Html.CheckBox("CheckAll")).Css("action");
+                                    columns.Add(model => model.RowNo).Titled("Row No.").Css("gridtext-center");
+                                    columns.Add(model => model.PipeYard).Titled("Pipe yard").Css("gridtext-center onclick ");
+                                    columns.Add(model => model.Location).Titled("Location");
+                                    columns.Add(model => model.ItemCode).Titled("Item code");
+                                    columns.Add(model => model.HeatNo).Titled("Heat no.");
+                                    columns.Add(model => model.OD).Titled("O.D").Css("gridtext-right");
+                                    columns.Add(model => model.WT).Titled("W.T").Css("gridtext-right");
+                                    columns.Add(model => model.Lenght).Titled("Length").Css("gridtext-right");
+                                    columns.Add(model => model.Grade).Titled("Grade");
+                                    columns.Add(model => model.Maker).Titled("Maker");
+                                    columns.Add(model => model.CurrentQty).Titled("Current Qty").Css("gridtext-right");
+                                    columns.Add(model => model.ActualQty).Titled("Actual Qty").Css("gridtext-right");
+                                    columns.Add(model => model.Status).Titled("Staus");
+                                })
+                                .Css("table-hover")
+                                 .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+                                .Sortable()
+                )
+            </th>
+        </tr>
+    </table>
+
+    <div class="modal fade" id="itemModal" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">Input Actual Qty</h5>
+                </div>
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Item Code</label>
+                        <div class="col-sm-9">
+                            <input autofocus id="itemCode" name="itemCode" class="form-control" placeholder="Item Code" readonly />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="ItemCode" itemCode-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Heat No</label>
+                        <div class="col-sm-9">
+                            <input id="heatNo" name="heatNo" class="form-control" placeholder="Heat No" readonly />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="HeatNo" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="OD" class="col-sm-1 col-form-label">O.D</label>
+                        <div class="col-sm-2">
+                            <input id="od" name="od" class="form-control" placeholder="OD" readonly />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="OD" data-valmsg-replace="true"></span>
+                        </div>
+                        <label for="WT" class="col-sm-1 col-form-label">W.T</label>
+                        <div class="col-sm-2">
+                            <input id="wt" name="wt" class="form-control" placeholder="WT" readonly />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="WT" data-valmsg-replace="true"></span>
+                        </div>
+                        <label for="LT" class="col-sm-1 col-form-label">L.T</label>
+                        <div class="col-sm-2">
+                            <input id="lt" name="lt" class="form-control" placeholder="LT" readonly />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="Length" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="actualQTY" class="col-sm-3 col-form-label">Actual QTY</label>
+                        <div class="col-sm-7">
+                            <input type="number" id="actualQTY" name="actualQTY" class="form-control" placeholder="Actual QTY" maxlength="20" min="0" />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="ActualQTY" data-valmsg-replace="true"></span>
+                        </div>
+                        <div class="col-sm-1 invisible">
+                            <input id="hiddenRowNo" name="hiddenRowNo" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <Button id="btnSave" name="submitButton" value="SaveModal" class="btn btn-primary btn-large btnCustom5">Save</Button>
+                    <button id="btnClose" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+                @*</form>*@
+            </div>
+        </div>
+    </div>
+}
+
+

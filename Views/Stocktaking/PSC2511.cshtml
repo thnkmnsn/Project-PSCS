@@ -1,0 +1,189 @@
+﻿@model PSCS.ModelsScreen.ImportExcelScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    /**/
+    ViewBag.Title = "PSCS - %PSC2511%";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section scripts{
+    <script src="http://malsup.github.com/jquery.form.js"></script>
+
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+
+        $(document).ready(function () {
+            var bar = $('.progress-bar');
+            var percent = $('.percent');
+            var status = $('#status');
+
+            $('#ImportButton').click(function () {
+                var percentVal = '0%';
+                bar.width(percentVal)
+                percent.html(percentVal);
+
+                status.empty();
+                ClearStatusDisplay();
+            });
+
+            $('#ImportExcel').ajaxForm({
+                beforeSend: function () {
+                    status.empty();
+                    var percentVal = '0%';
+                    bar.width(percentVal);
+                    percent.html(percentVal);
+                },
+                uploadProgress: function (event, position, total, percentComplete) {
+                    // Update progress
+                    var percentVal = percentComplete + '%';
+                    bar.width(percentVal);
+                    percent.html(percentVal);
+                },
+                success: function (responseText, statusText, xhr) {
+                    if (responseText.Type == "Error") {
+                        // Reset progress bar
+                        var percentVal = '0%';
+                        bar.width(percentVal)
+                        percent.html(percentVal);
+
+                        // Show Error red tab
+                        status.html("@PSCS.Resources.Common_cshtml.Error" + responseText.Message.replace(/(?:\r\n|\r|\n)/g, '<br>'));
+                        StatusErrorDisplay();
+                    }
+                    if (responseText.Type == "Success") {
+                        // Progress bar 100 %
+                        var percentVal = '100%';
+                        bar.width(percentVal);
+                        percent.html(percentVal);
+
+                        // Show Succuss green tab
+                        status.html("@PSCS.Resources.Common_cshtml.Success" + responseText.Message.replace(/(?:\r\n|\r|\n)/g, '<br>'));
+                        StatusSuccessDisplay();
+                    }
+                }
+            });
+        });
+
+        function StatusErrorDisplay() {
+            var x = document.getElementById('status');
+            x.className = "alert alert-danger"
+        }
+
+        function StatusSuccessDisplay() {
+            var x = document.getElementById('status');
+            x.className = "alert alert-success"
+        }
+
+        function ClearStatusDisplay() {
+            var x = document.getElementById('status');
+            x.classList.remove("alert");
+        }
+
+    </script>
+}
+
+
+
+<h1 class="H1">Import Excel</h1>
+
+<table border="0" cellSpacing="0" cellPadding="0" width="100%">
+    <tr>
+        <th>
+            <div id="status">
+            </div>
+        </th>
+    </tr>
+
+    @using (Html.BeginForm("Import", "StockTaking", FormMethod.Post, new { enctype = "multipart/form-data", id = "ImportExcel" }))
+    {
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th>
+                                        <Button id="btnImport" name="submitButton" value="Import" class="btn btn-primary btn-large btnCustom5">Import</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="70px">
+                                        @Html.Label("File path", htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th>
+                                        @Html.TextBoxFor(m => m.ImportFile, new { @type = "file", id = "ImportButton" })
+                                        @Html.ValidationMessageFor(m => m.ImportFile)
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+    }
+    <tr>
+        <th height="5px"></th>
+    </tr>
+
+    <tr>
+        <th height="20px">
+            <div class="progress" style="width:100%">
+                <div class="progress-bar"></div>
+                <div class="percent">0%</div>
+            </div>
+        </th>
+    </tr>
+    <tr>
+        <th height="5px"></th>
+    </tr>
+
+    <tr>
+        <th>
+            @using (Html.BeginForm("Back", "StockTaking", FormMethod.Post))
+            {
+                <table align="left">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th>
+                                        <Button id="btnBack" name="submitButton" value="Back" class="btn btn-primary btn-large btnCustom5">Back</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            }
+        </th>
+    </tr>
+    <tr>
+        <th height="20px"></th>
+    </tr>
+
+</table>

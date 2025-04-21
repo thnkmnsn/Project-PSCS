@@ -1,0 +1,199 @@
+﻿@model PSCS.ModelsScreen.StockCheckManagementScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@{
+    ViewBag.Title = "PSC2310";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+        $(function () {
+            $(".datepicker").datepicker({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+            });
+        });
+
+        // Create
+        $('#btnCreate').click(function () {
+            url = '@Url.Action("PSC2310_Edit", "StockCheckManagement")';  
+            window.location.href = url + "?row_no=";
+        });
+
+        // Review
+        $('#btnReview').click(function () {
+            url = '@Url.Action("PSC2310_Edit", "StockCheckManagement")';  
+            window.location.href = url + "?row_no=" + pId;
+        });
+
+        // View
+        $('#btnView').click(function () {
+            url = '@Url.Action("PSC2310_Edit", "StockCheckManagement")';  
+            window.location.href = url + "?row_no=" + pId;
+        });
+
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            var id = $(e.target).closest('tr').find('td:nth-child(1)').text();
+            if ($(this).hasClass('selected')) {
+                $(this).removeClass('selected');
+
+                $('#btnCreate').removeAttr('disabled');
+                $('#btnReview').attr('disabled', 'disabled');
+                $('#btnView').attr('disabled', 'disabled');
+
+                pId = "";
+            }
+            else {
+                $('.mvc-grid tr.selected').removeClass('selected');
+                $(this).addClass('selected');
+
+                $('#btnCreate').attr('disabled', 'disabled');
+                $('#btnReview').removeAttr('disabled');
+                $('#btnView').removeAttr('disabled');
+
+                console.log(id);
+
+                pId = id;
+            }
+        });
+
+    </script>
+}
+
+    <style>
+        .selected {
+            background-color: #B0BED9;
+        }
+
+        .table-hover > tbody > tr:hover.selected > td,
+        .table-hover > tbody > tr:hover.selected > th {
+            background-color: #aab7d1;
+        }
+    </style>
+
+<!-- Title -->
+<h1 class="H1">Stock Check Management</h1>
+
+@using (Html.BeginForm("PSC2310", "StockCheckManagement", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")">
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                    <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                    <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                    <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Button Area  -->
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <input type="button" id="btnCreate" value="Create" class="btn btn-large btn-skyblue" />
+                            <input type="button" id="btnReview" value="Review" class="btn btn-large btn-orange" disabled="disabled" />
+                            <input type="button" id="btnView" value="View" class="btn btn-large btn-secondary" disabled="disabled" />
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+
+        <!-- Criteria area -->
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- Stock Check date -->
+                                    <th width="170px">
+                                        @Html.LabelFor(m => m.FilterStockCheckDate, htmlAttributes: new { @class = "datepicker-caption" })
+                                    </th>
+                                    <th width="150px">
+                                        @Html.EditorFor(m => m.FilterStockCheckDate, new { htmlAttributes = new { @class = "datepicker row", @readonly = "readonly" } })
+                                    </th>
+                                    
+                                    <!-- Yard -->
+                                    <th width="50px">
+                                        @Html.LabelFor(m => m.FilterYard, htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="150px">
+                                        @Html.DropDownListFor(m => m.FilterYard, Model.YardList, "All", new { @style = "height:25px; width:120px;" })
+                                    </th>
+
+                                    <!-- Yard -->
+                                    <th width="50px">
+                                        @Html.LabelFor(m => m.FilterStatus, htmlAttributes: new { @class = "textbox-caption" })
+                                    </th>
+                                    <th width="160px">
+                                        @Html.DropDownListFor(m => m.FilterStatus, Model.StatusList, "All", new { @style = "height:25px; width:120px;" })
+                                    </th>
+
+                                    <!-- Button -->
+                                    <th width="140px">
+                                        <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large">Filter</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+
+        <!--Grid Area -->
+        <tr>
+            <th>
+                @(Html
+                                    .Grid(Model.DataList)
+                                    .Build(columns =>
+                                    {
+                                        columns.Add(model => model.RowNo).Titled("Row No.").Css("gridtext-center");
+                                        columns.Add(model => model.StockCheckDate).Formatted("{0:yyyy-MM-dd}").Titled("Stock Check Date");
+                                        columns.Add(model => model.YardName).Titled("Yard");
+                                        columns.Add(model => model.Status).Titled("Status");
+                                    })
+                                    .Css("table-hover")
+                                     .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+                                    .Sortable()
+                )
+            </th>
+        </tr>
+    </table>
+}

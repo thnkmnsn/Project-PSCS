@@ -1,0 +1,25 @@
+﻿@model  IEnumerable<PSCS.Models.StockList>
+
+@* Should only include grid declaration *@
+
+@(Html
+     .Grid(Model)
+     .Build(columns =>
+     {
+         columns.Add(model => "<input type=\"checkbox\" name=\"rowNo\" value=\"" + model.RowNo + "\" />")
+                                .Titled(Html.CheckBox("CheckAll")).Encoded(false).Css("action");
+         columns.Add(model => model.RowNo).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_RowNo).Css("gridtext-center");
+         columns.Add(model => model.YardID).AppendCss("hide");
+         columns.Add(model => model.YardName).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_Yard).Css("gridtext-center");
+         columns.Add(model => model.LocationCode).AppendCss("hide");
+         columns.Add(model => model.LocationName).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_Location).Css("gridtext-center");
+         columns.Add(model => model.ItemCode).AppendCss("hide");
+         columns.Add(model => model.HeatNo).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_HeatNo).Css("gridtext-center");
+         columns.Add(model => model.Description).Titled(@PSCS.Resources.PSC2310_cshtml.Grid_Description).Css("gridtext-center");
+     })
+     .Id("GridStock")
+     .Attributed(new { id = "part-tb" })
+     .Css("table-hover")
+     .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+     .Sortable()
+)

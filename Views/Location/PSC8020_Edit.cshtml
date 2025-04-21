@@ -1,0 +1,203 @@
+﻿@model PSCS.ModelsScreen.LocationEditScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    if (Model.SubmitMode.Equals("Insert"))
+    {
+        ViewBag.Title = PSCS.Resources.PSC8020_Edit_cshtml.Title_Add;
+    }
+    else
+    {
+        ViewBag.Title = PSCS.Resources.PSC8020_Edit_cshtml.Title_Edit;
+    }
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/SessionTimeout.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var SubmitMode = $("#SubmitMode").val();
+
+            if (SubmitMode == 'Insert') {
+                setInititialInsert();
+            }
+            else if (SubmitMode == 'Update') {
+                setInititialUpdate();
+            }
+
+            console.log($("#btnSave").val());
+
+            // set ddl-yard follow item ddl-place
+            if (!$('#pYard').val()) {
+                ddlChangePlaceCreate();
+            }
+        });
+
+        // Insert
+        function setInititialInsert() {
+            $("#btnSave").val("Insert");
+            $("#btnConfirm").val("Insert");
+            $("#pLocation").attr('readonly', false);
+        }
+
+
+        // Insert
+        function setInititialUpdate() {
+            $("#btnSave").val("Update");
+            $("#btnConfirm").val("Update");
+            $("#btnDelete").show();
+            $("#pLocation").attr('readonly', true);
+        }
+
+        // ajax ddl
+        function ddlChangePlaceCreate() {
+            var _id = $('#pPlace').val();
+
+            $.ajax({
+                url: "/Location/ddlChangePlace/",
+                type: "GET",
+                dataType: "JSON",
+                data: { Place: _id },
+                success: function (response) {
+                    $("#pYard").html("");
+                    $.each(response, function (index, value) {
+                        $("#pYard").append(
+                            $('<option></option>').val(value.YardID).html(value.Name)
+                        );
+                    });
+
+                    $('#pYard').prop('selectedIndex', 0);
+                },
+                error: function (reponse) {
+                    //alert("error : " + reponse);
+                },
+                complete: function (xhr, status) {
+                    IsLogonRequired(xhr.responseText);
+                }
+            });
+
+        }
+
+        $('#btnSave').on('click', function () {
+            var save = $("#btnSave").val();
+            $("#btnConfirm").val(save);
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnDelete').on('click', function () {
+            $("#btnConfirm").val("Delete");
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC8020", "Location")';
+        });
+
+    </script>
+}
+
+@using (Html.BeginForm("PSC8020_Edit", "Location", FormMethod.Post))
+{
+    <div class="panel-heading">
+        @if (Model.SubmitMode.Equals("Insert"))
+        {
+            <h1 id="itemModalLabel">@PSCS.Resources.PSC8020_Edit_cshtml.Title_Add</h1>
+        }
+        else
+        {
+            <h1 id="itemModalLabel">@PSCS.Resources.PSC8020_Edit_cshtml.Title_Edit</h1>
+        }
+    </div>
+    <div class="panel-title form-group row text-right">
+        <Button id="btnDelete" name="submitButton" value="Delete" class="btn btn-large btn-red" style="float:left; margin-top:10px;display: none;"> @PSCS.Resources.PSC8020_Edit_cshtml.Button_Delete </Button>
+        <Button id="btnSave" name="submitButton" value="SaveModal" class="btn btn-primary btn-large btn-green"> @PSCS.Resources.PSC8020_Edit_cshtml.Button_Save </Button>
+        <button id="btnBack" type="button" value="Back" class="btn btn-secondary"> @PSCS.Resources.PSC8020_Edit_cshtml.Button_Back </button>
+    </div>
+    <div class="panel-body">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8020_Edit_cshtml.Place</label>
+            <div class="col-md-10">
+                @Html.DropDownListFor(m => m.InputPlace, Model.PlaceList, new { @id = "pPlace", @style = "height:34px; width:220px;", @class = "form-control", onchange = "ddlChangePlaceCreate()" })
+                @Html.ValidationMessageFor(model => model.InputPlace, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8020_Edit_cshtml.Yard</label>
+            <div class="col-md-10">
+                @Html.DropDownListFor(m => m.InputYard, Model.YardList, new { @id = "pYard", @style = "height:34px; width:220px;", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.InputYard, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8020_Edit_cshtml.Location</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.InputLocation, new { htmlAttributes = new { @id = "pLocation", @class = "form-control", placeholder = @PSCS.Resources.PSC8020_Edit_cshtml.Location, @maxlength = "4", min = "0" } })
+                @Html.ValidationMessageFor(model => model.InputLocation, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8020_Edit_cshtml.Name</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.InputName, new { htmlAttributes = new { @id = "pName", @class = "form-control", placeholder = @PSCS.Resources.PSC8020_Edit_cshtml.Name, @maxlength = "32", min = "0" } })
+                @Html.ValidationMessageFor(model => model.InputName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8020_Edit_cshtml.Active</label>
+            <div class="col-md-10">
+                @Html.DropDownListFor(m => m.InputActive, Model.ActiveList, new { @style = "height:34px; width:220px;", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.InputActive, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @Html.HiddenFor(model => model.SubmitMode, new { @id = "SubmitMode" })
+
+        @*<div height="5px"></div>*@
+    </div>
+
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirm" name="submitButton" value="Confirm" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

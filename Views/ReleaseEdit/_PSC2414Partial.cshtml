@@ -1,0 +1,101 @@
+﻿@model  PSCS.ModelsScreen.ReleaseSelectLocationPatialScreen
+
+@{
+    ViewBag.Title = "_PSC2411Partial";
+}
+
+<table border="0" cellSpacing="0" cellPadding="0" width=100%>
+    <!-- Alert Area  -->
+    <tr>
+        <td>
+            <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                {
+                    <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                }
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                {
+                    <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                }
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                {
+                    <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                }
+                @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                {
+                    <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                }
+                <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div class="mvc-grid">
+                <table id="part-tb" class="table-hover">
+                    <thead>
+                        <tr>
+                            <th>@PSCS.Resources.PSC2411_cshtml.GridSelect</th>
+                            <th>@PSCS.Resources.PSC2411_cshtml.GridRowNo</th>
+                            <th>@PSCS.Resources.PSC2411_cshtml.GridPipeYard</th>
+                            <th>@PSCS.Resources.PSC2411_cshtml.GridLocationCode</th>
+                            <th>@PSCS.Resources.PSC2411_cshtml.GridLocationName</th>
+                            <th>@PSCS.Resources.PSC2411_cshtml.GridDescription</th>
+                            <th>@PSCS.Resources.PSC2411_cshtml.GridQTY</th>
+                            <th>@PSCS.Resources.PSC2411_cshtml.GridTotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grid_body">
+                        @if (Model.DataList != null)
+                        {
+                            for (int i = 0; i < Model.DataList.Count; i++)
+                            {
+                                <tr>
+                                    <td class="gridtext-center">
+                                        <input type="checkbox" name="rowNo" value="@Model.DataList[i].Location" />
+                                        @Html.HiddenFor(x => Model.DataList[i].Qty, new { @id = "hdnQty" })
+                                    </td>
+
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.DataList[i].RowNo)
+                                    </td>
+
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.DataList[i].YardName)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.DataList[i].Location)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.DataList[i].LocationName)
+                                    </td>
+                                    <td class="gridtext-center">
+                                        @Html.DisplayFor(x => Model.DataList[i].Description)
+                                    </td>
+                                    <td class="gridtext-right">
+                                        @Html.DisplayFor(x => Model.DataList[i].Qty)
+                                    </td>
+                                    <td class="gridtext-right">
+                                        @Html.DisplayFor(x => Model.DataList[i].ReceiveDateText)
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        
+                    </tbody>
+                </table>
+            </div>
+        </td>
+    </tr>
+</table>
+        
+        
+
+
+

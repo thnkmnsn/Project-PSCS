@@ -1,0 +1,84 @@
+﻿@model PSCS.ModelsScreen.CommonMasterScreenEdit
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    if (Model.EditMode.Equals("Add"))
+    {
+        ViewBag.Title = PSCS.Resources.PSC8060_Edit_cshtml.Title_Add;
+    }
+    else
+    {
+        ViewBag.Title = PSCS.Resources.PSC8060_Edit_cshtml.Title_Edit;
+    }
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+
+    <script>
+    </script>
+}
+
+@using (Html.BeginForm("PSC8060_Edit", "CommonMaster", FormMethod.Post))
+{
+    <div class="panel-heading">
+        @if (Model.EditMode.Equals("Add"))
+        {
+        <h1 id="itemModalLabel">@PSCS.Resources.PSC8060_Edit_cshtml.Title_Add</h1>
+        }
+        else
+        {
+        <h1 id="itemModalLabel">@PSCS.Resources.PSC8060_Edit_cshtml.Title_Edit</h1>
+        }
+    </div>
+    <div class="panel-body">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8060_Edit_cshtml.ParentCode</label>
+            <div class="col-sm-10">
+                @Html.TextBoxFor(model => model.EditParentCode, Model.EditMode.Equals("Edit")
+                                            ? (object)new { @readonly = "readonly", @class = "form-control", @placeholder = @PSCS.Resources.PSC8060_Edit_cshtml.ParentCode, @maxlength = "4" }
+                                            : (object)new { @class = "form-control", @placeholder = @PSCS.Resources.PSC8060_Edit_cshtml.ParentCode, @maxlength = "4" })
+                @Html.ValidationMessageFor(model => model.EditParentCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8060_Edit_cshtml.CommonCode</label>
+            <div class="col-sm-10">
+                @Html.TextBoxFor(model => model.EditCommonCode, Model.EditMode.Equals("Edit")
+                                            ? (object)new { @readonly = "readonly", @class = "form-control", @placeholder = @PSCS.Resources.PSC8060_Edit_cshtml.CommonCode, @maxlength = "4" }
+                                            : (object)new { @class = "form-control", @placeholder = @PSCS.Resources.PSC8060_Edit_cshtml.CommonCode, @maxlength = "4" })
+                @Html.ValidationMessageFor(model => model.EditCommonCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8060_Edit_cshtml.ValueEn</label>
+            <div class="col-sm-10">
+                @Html.TextBoxFor(model => model.EditValueEN, "", new { @class = "form-control", @placeholder = @PSCS.Resources.PSC8060_Edit_cshtml.ValueEn, @maxlength = "512" })
+                @Html.ValidationMessageFor(model => model.EditValueEN, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8060_Edit_cshtml.ValueTh</label>
+            <div class="col-sm-10">
+                @Html.TextBoxFor(model => model.EditValueTH, "", new { @class = "form-control", @placeholder = @PSCS.Resources.PSC8060_Edit_cshtml.ValueTh, @maxlength = "512" })
+                @Html.ValidationMessageFor(model => model.EditValueTH, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        @Html.HiddenFor(model => model.EditMode, new { @id = "EditMode" })
+        <div class="panel-title form-group row text-right">
+            @if (Model.EditMode.Equals("Edit"))
+            {
+            <Button id="btnDelete" name="submitButton" value="Delete" class="btn btn-large btn-basic" style="float:left;">@PSCS.Resources.PSC8060_Edit_cshtml.Button_Delete</Button>
+            <Button id="btnUpdate" name="submitButton" value="Update" class="btn btn-large btn-green">@PSCS.Resources.PSC8060_Edit_cshtml.Button_Save</Button>
+            <button id="btnBack" name="submitButton" value="Back" class="btn btn-secondary">@PSCS.Resources.PSC8060_Edit_cshtml.Button_Back</button>
+            }else
+            { 
+            <Button id="btnUpdate" name="submitButton" value="Insert" class="btn btn-large btn-green">@PSCS.Resources.PSC8060_Edit_cshtml.Button_Save</Button>
+            <button id="btnBack" name="submitButton" value="Back" class="btn btn-secondary">@PSCS.Resources.PSC8060_Edit_cshtml.Button_Back</button>
+            }
+        </div>
+    </div>
+}

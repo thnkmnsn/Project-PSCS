@@ -1,0 +1,242 @@
+﻿@model PSCS.ModelsScreen.ReceivePlanScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@{
+    ViewBag.Title = PSCS.Resources.PSC2110_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/jqueryui_datepicker_thai_min.js"></script>
+    <script language="javascript" type="text/javascript">
+        var pReceiveId = "";
+        var pDeliveryDate = "";
+        var pContainNo = "";
+        var pStatus = "";
+        var LangTh = false;
+
+        $(function () {
+            if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true
+            }
+            else {
+                LangTh = false
+            }
+
+            $("#deliveryDate").datepicker_thai({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                langTh: LangTh,
+                yearTh: LangTh,
+            });
+        });
+
+        // Row selected
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            var pReceiveId = $(e.target).closest('tr').find('td:nth-child(2)').text();
+
+            url = '@Url.Action("PSC2111", "ReceivePlan")';
+            window.location.href = url + '?_id=' + pReceiveId
+        });
+
+        $('.mvc-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+         $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC2110", "ReceivePlan")';
+         });
+
+        $('#btnEdit').click(function () {
+            window.location.href = '@Url.Action("PSC2110", "ReceivePlanAdjust")';
+        });
+
+    </script>
+}
+
+<style>
+    .divgrid-rowno {
+        width: 80px;
+        text-align: center;
+    }
+
+    .tr .th .total {
+        text-align: right;
+    }
+    /*.ui-datepicker-year:not(.custom-datepicker-year) {
+        display: none;
+    }*/
+</style>
+
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC2110_cshtml.Title</h1>
+
+
+@using (Html.BeginForm("PSC2110", "ReceivePlan", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <!-- Alert Area  -->
+        <tr>
+            <td>
+                <div class="details @(
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" :
+                    @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Success</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Information</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Warning</strong>
+                    }
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {
+                        <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                    }
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                <!-- Button area -->
+                <table align="right">
+                    <tr>
+                        <th>
+                            <Button id="btnClearFilter" name="submitButton" value="ClearFilter" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_ClearFilter</Button>
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <p>@PSCS.Resources.Common_cshtml.Total: @Html.DisplayFor(model => model.Total)  @PSCS.Resources.Common_cshtml.Item</p>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th style="text-align:right">
+                <Button id="btnEdit" name="submitButton" value="Edit" class="btn btn-large btn-red">@PSCS.Resources.PSC2110_cshtml.Button_Edit</Button>
+            </th>
+        </tr>
+        <tr>
+            <th height="20px"></th>
+        </tr>
+
+        <tr>
+            <th>
+                <!-- Criteria area -->
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <!-- Delivery date -->
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2110_cshtml.Filter_DeliveryDate</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterDeliveryDate, new { htmlAttributes = new { @id = "deliveryDate", @class = "datepicker row", @readonly = "readonly", @style = "width:140px;" } })
+                                    </th>
+
+                                    <!-- Container No. -->
+                                    <th width="130px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC2110_cshtml.Filter_ContainerNo</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterContainerNo, new { htmlAttributes = new { @style = "width:170px;", @maxlength = "15" } })
+                                    </th>
+
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th width="80px">
+                            <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterHeatNo</label>
+                        </th>
+                        <th width="150px">
+                            @*@Html.Editor("HeatNo", new { htmlAttributes = new { @class = "textbox-100" } })*@
+                            @Html.EditorFor(m => m.FilterHeatNo, new { htmlAttributes = new { @style = "height:25px; width:130px;" } })
+                        </th>
+                        <th width="70px">
+                            <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterOD</label>
+                        </th>
+                        <th width="130px">
+                            @Html.EditorFor(m => m.FilterOD, new { htmlAttributes = new { @class = "textbox-100", @type = "number", @min = "0", @max = "10000", @step = "0.1" } })
+                        </th>
+                        <th width="70px">
+                            <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterWT</label>
+                        </th>
+                        <th width="120px">
+                            @Html.EditorFor(m => m.FilterWT, new { htmlAttributes = new { @class = "textbox-100", @type = "number", @min = "0", @max = "10000", @step = "0.1" } })
+                        </th>
+                        <th width="60px">
+                            <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterLength</label>
+                        </th>
+                        <th width="120px">
+                            @Html.EditorFor(m => m.FilterLength, new { htmlAttributes = new { @class = "textbox-100", @type = "number", @min = "0", @max = "100000", @step = "1" } })
+                        </th>
+
+                        <!-- Button -->
+                        <th width="140px">
+                            <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large">@PSCS.Resources.PSC2110_cshtml.Button_Filter</Button>
+                        </th>
+
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+
+        <!-- Body : Detail -->
+        <tr>
+            <th>
+                @(Html
+                        .Grid(Model.ReceivePlanList)
+                        .Build(columns =>
+                        {
+                            columns.Add(model => model.RowNo).Titled(@PSCS.Resources.PSC2110_cshtml.Grid_RowNo).Css("divgrid-rowno");
+                            columns.Add(model => model.ReceiveId).AppendCss("hide");
+                            columns.Add(model => model.DeliveryDate).Titled(@PSCS.Resources.PSC2110_cshtml.Grid_DeliveryDate).Formatted("{0:yyyy-MM-dd}").Css("gridtext-center");
+                            columns.Add(model => model.ContainerNo).Titled(@PSCS.Resources.PSC2110_cshtml.Grid_ContainerNo).Css("gridtext-center");
+                            columns.Add(model => model.StartTime).Formatted("{0:HH:mm}").AppendCss("hide");
+                            columns.Add(model => model.FinishTime).Formatted("{0:HH:mm}").AppendCss("hide");
+                            columns.Add(model => model.Status).AppendCss("hide");
+                            columns.Add(model => model.StatusText).Titled(@PSCS.Resources.PSC2110_cshtml.Grid_Status).Css("gridtext-center");
+                        })
+                        .Css("table-hover")
+                        .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+                        .Sortable()
+            )
+            </th>
+        </tr>
+    </table>
+}
+

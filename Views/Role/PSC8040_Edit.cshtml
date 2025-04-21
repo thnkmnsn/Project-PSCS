@@ -1,0 +1,167 @@
+﻿@model PSCS.ModelsScreen.RoleEdit
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    if (Model.SubmitMode.Equals("Insert"))
+    {
+        ViewBag.Title = PSCS.Resources.PSC8040_Edit_cshtml.Title_Add;
+    }
+    else
+    {
+        ViewBag.Title = PSCS.Resources.PSC8040_Edit_cshtml.Title_Edit;
+    }
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+        $(document).ready(function () {
+            var SubmitMode = $("#SubmitMode").val();
+            console.log(SubmitMode);
+
+            if (SubmitMode == 'Insert') {
+                setInititialInsert();
+            }
+            else if (SubmitMode == 'Update') {
+                setInititialUpdate();
+            }
+        });
+
+
+        $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC8040", "Role")';
+        });
+
+
+        // Insert
+        function setInititialInsert() {
+            $("#itemModalLabel").text('@PSCS.Resources.PSC8040_Edit_cshtml.Title_Add');
+            $("#btnConfirm").val("Insert");
+        }
+
+        // Update
+        function setInititialUpdate() {
+            $("#itemModalLabel").text('@PSCS.Resources.PSC8040_Edit_cshtml.Title_Edit');
+            $("#btnConfirm").val("Insert");
+            $("#btnDelete").show();
+            $("#roleIdRow").show();
+        }
+
+        // Delete
+        @*$('#btnDelete').on('click', function () {
+            if (!confirm('@PSCS.Resources.Common_cshtml.DeleteConfirm')) {
+                return false;
+            }
+
+            $('#SubmitMode').val('Delete');
+            $(this).submit();
+        });*@
+        $('#btnSave').on('click', function () {
+            $("#btnDeleteM").hide();
+            $("#btnConfirm").show();
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnDelete').on('click', function () {
+            $("#btnConfirm").hide();
+            $("#btnDeleteM").show();
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnConfirm').on('click', function () {
+            $(this).submit();
+        });
+
+        $('#btnDeleteM').on('click', function () {
+            $('#SubmitMode').val('Delete');
+            $("#btnDeleteM").val('Delete');
+            $(this).submit();
+        });
+
+
+    </script>
+}
+
+@using (Html.BeginForm("PSC8040_Edit", "Role", FormMethod.Post))
+{
+    <div class="panel-heading">
+        <h1 id="itemModalLabel"> </h1>
+    </div>
+    <div class="panel-title form-group row text-right">
+        <Button id="btnDelete" name="submitButton" value="Delete" class="btn btn-large btn-red" style="float:left; margin-top:10px;display: none;"> @PSCS.Resources.PSC8040_Edit_cshtml.Button_Delete </Button>
+        <Button id="btnSave" name="submitButton" value="SaveModal" class="btn btn-primary btn-large btn-green"> @PSCS.Resources.PSC8040_Edit_cshtml.Button_Save </Button>
+        <button id="btnBack" type="button" value="Back" class="btn btn-secondary"> @PSCS.Resources.PSC8040_Edit_cshtml.Button_Back </button>
+    </div>
+    <div class="panel-body">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group row" id="roleIdRow" style="display: none;">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8040_Edit_cshtml.RoleID</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.InputRoleID, new { htmlAttributes = new { @id = "pRoleId", @class = "form-control", placeholder = @PSCS.Resources.PSC8040_Edit_cshtml.RoleID, @maxlength = "4", min = "0", @readonly = "readonly" } })
+                @Html.ValidationMessageFor(model => model.InputRoleID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8040_Edit_cshtml.NameTH</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.InputNameTh, new { htmlAttributes = new { @id = "pNameTh", @class = "form-control", placeholder = @PSCS.Resources.PSC8040_Edit_cshtml.NameTH, @maxlength = "512", min = "0" } })
+                @Html.ValidationMessageFor(model => model.InputNameTh, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row ">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8040_Edit_cshtml.NameEN</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.InputNameEn, new { htmlAttributes = new { @id = "pNameEn", @class = "form-control", placeholder = @PSCS.Resources.PSC8040_Edit_cshtml.NameEN, @maxlength = "512", min = "0" } })
+                @Html.ValidationMessageFor(model => model.InputNameEn, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @Html.HiddenFor(model => model.SubmitMode, new { @id = "SubmitMode" })
+
+        @*<div height="5px"></div>*@
+    </div>
+
+    //add ConfirmDialog
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirm" name="submitButton" value="Save" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                    <Button id="btnDeleteM" name="submitButton" value="Delete" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

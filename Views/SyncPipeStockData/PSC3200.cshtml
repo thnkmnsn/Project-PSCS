@@ -1,0 +1,54 @@
+﻿@model PSCS.ModelsScreen.SyncPipeStockDataScreen
+
+@{
+    ViewBag.Title = "PSC3200";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1 class="H1">Sync Pipe Stock Data</h1>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Sync Pipe Stock Data</title>
+</head>
+<body>
+    @using (Html.BeginForm("PSC0020", "SyncReceive", FormMethod.Post))
+    {
+        <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+            <tr>
+                <td>
+                    <div class="details @(@Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                        {<strong>@PSCS.Resources.Common_cshtml.Success</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                        {<strong>@PSCS.Resources.Common_cshtml.Information</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                        {<strong>@PSCS.Resources.Common_cshtml.Warning</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                        {<strong>@PSCS.Resources.Common_cshtml.Error</strong>}
+                        <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <table align="right">
+                        <tr>
+                            <th>
+                                <Button id="btnSync" name="submitButton" value="Sync" class="btn btn-primary btn-large btnCustom5">Sync</Button>
+                            </th>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+        </table>
+    }
+    <table></table>
+
+
+</body>
+</html>
+

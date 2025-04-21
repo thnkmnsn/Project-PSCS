@@ -1,0 +1,82 @@
+﻿@model PSCS.Models.User
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC0010_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<html>
+<head>
+    
+    <meta name="viewport" content="width-device-width" />
+    <title>Login</title>
+    <style>
+        .field-validation-error {
+            color: red;
+        }
+    </style>
+</head> 
+<body>
+    @*<img src="~/Icon/PSCSIcon16.ico">
+    <img src="~/Icon/PSCSIcon32.ico">
+    <img src="~/Icon/PSCSIcon48.ico">
+    <img src="~/Icon/PSCSIcon64.ico">*@
+    <h1 class="H1">@PSCS.Resources.PSC0010_cshtml.Title</h1>
+    <div id="login-div">
+        @using (Html.BeginForm("Autherize", "Account", FormMethod.Post))
+        {
+
+            <table width="100%">
+                <tr>
+                    <td>
+                        @if (Model.LoginErrorMessage != null) // ERROR HERE.
+                        {
+                            <div class="alert alert-danger">
+                                <strong>@PSCS.Resources.Common_cshtml.Error</strong>
+                                <label calss="field-validation-error">@Html.DisplayFor(model => model.LoginErrorMessage)</label>
+                            </div>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="textbox-caption">@PSCS.Resources.PSC0010_cshtml.UserId</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>@Html.EditorFor(model => model.UserId, new { htmlAttributes = new { @class = "form-control", @maxlength = "8", @placeholder = @PSCS.Resources.PSC0010_cshtml.UserId } })</td>
+                </tr>
+                <tr>
+                    <td>@Html.ValidationMessageFor(model => model.UserId)</td>
+                </tr>
+                <tr>
+                <tr><th height="5px"></th></tr>
+                <tr>
+                    <td>
+                        <label class="textbox-caption">@PSCS.Resources.PSC0010_cshtml.Password</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>@Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", @maxlength = "16", @placeholder = @PSCS.Resources.PSC0010_cshtml.Password } })</td>
+                </tr>
+                <tr>
+                    <td>@Html.ValidationMessageFor(model => model.Password)</td>
+                </tr>
+                <tr>
+                    <td height="10px"></td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="submit" name="name" class="btn btn-success" value="@PSCS.Resources.PSC0010_cshtml.LoginButton" />
+                    </td>
+                </tr>
+            </table>
+        }
+    </div>
+    @*<script src="~/Scripts/jquery-1.12.4.min.js"></script>
+        <script src="~/Scripts/jquery.validate.min.js"></script>
+        <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>*@
+</body>
+</html>
+
+

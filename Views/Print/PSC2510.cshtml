@@ -1,0 +1,449 @@
+﻿@model PSCS.ModelsScreen.PrintScreen
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+@{
+    ViewBag.Title = "PSC2510";
+}
+
+@*https://stackoverflow.com/questions/43922372/transforming-a-zpl-string-into-a-jpg-image-and-pdf/43923891#43923891*@
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+@*<script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>*@
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    @*<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>*@
+    <script src="~/Scripts/jqueryui_datepicker_thai_min.js"></script>
+    <script language="javascript" type="text/javascript">
+        var pReceiveId = "";
+        var pDeliveryDate = "";
+        var pContainNo = "";
+        var pStatus = "";
+        var LangTh = false;
+
+        $(function () {
+            if ('@ViewBag.Lang' == 'Th') {
+                LangTh = true
+            }
+            else {
+                LangTh = false
+            }
+
+            $("#deliveryDate").datepicker_thai({
+                dateFormat: "yy-mm-dd",
+                showOn: "both",
+                buttonText: "<span class='glyphicons glyphicon-calendar'></span>",
+                langTh: LangTh,
+                yearTh: LangTh,
+            });
+        });
+
+        @*// Row selected
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            var pReceiveId = $(e.target).closest('tr').find('td:nth-child(2)').text();
+
+            url = '@Url.Action("PSC2111", "ReceivePlan")';
+            window.location.href = url + '?_id=' + pReceiveId
+        });*@
+
+        $('.mvc-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+         $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });
+
+    </script>
+}
+<!-- Title -->
+<h1 class="H1">@PSCS.Resources.PSC2510_cshtml.Title</h1>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-6">
+                <form>
+                    <textarea id="zpl" cols="80" rows="25" spellcheck="false" style="height:100px ; width:100px; display:none">
+
+^XA
+^LH20,0
+^FO130,35
+^ASN
+^FD^FS
+^FO400,30
+^ATN
+^FDJan-2019^FS
+^FO130,85
+^ASN
+^FDJIANGYIN^FS
+^FO30,140
+^AUN
+^FD273 X 20.4 X 6730^FS
+^FO30,205
+^AUN
+^FD19302460       ^FS
+^FO30,45
+^BXN,3,200
+^FDMC315E-4064010206450-4319302775       201901010000^FS
+^XZ
+</textarea>
+                    <div class="controls" style="display:none">
+                        <button type="button" class="btn btn-default" id="redraw"><i class="fa fa-pencil-square-o"></i> Redraw</button>
+                        <button type="button" class="btn btn-default" id="addImage"><i class="fa fa-picture-o"></i> Add image</button>
+                        <button type="button" class="btn btn-default" id="rotate"><i class="fa fa-rotate-right"></i> Rotate</button>
+                        <a class="btn btn-default" id="permalink" href=""><i class="fa fa-link"></i> Permalink</a>
+                        <button type="button" class="btn btn-default" id="openFile"><i class="fa fa-folder-open-o"></i> Open file</button>
+                        <br>
+                        <label for="density" class="aligned">Print Density:</label>
+                        <select name="density" id="density">
+                            <option value="6">6 dpmm (152 dpi)</option>
+                            <option value="8" selected>8 dpmm (203 dpi)</option>
+                            <option value="12">12 dpmm (300 dpi)</option>
+                            <option value="24">24 dpmm (600 dpi)</option>
+                        </select>
+                        <br>
+                        <label for="width" class="aligned">Label Size:</label>
+                        <input type="number" placeholder="width" min="1" step="any" required="required" name="width" id="width" value="4">
+                        <span>x</span>
+                        <input type="number" placeholder="height" min="1" step="any" required="required" name="height" id="height" value="6">
+                        <select name="units" id="units">
+                            <option value="1" selected>inches</option>
+                            <option value="0.393701">cm</option>
+                            <option value="0.0393701">mm</option>
+                        </select>
+                        <br>
+                        <label for="index" class="aligned">Show Label:</label>
+                        <input type="number" placeholder="index" min="0" max="0" step="1" required="required" name="index" id="index" value="0">
+                        <span class="note">(0 = first label, 1 = second label, etc.)</span>
+                        <br>
+                        <label>Labels Available:</label>
+                        <span id="total">1</span>
+                        <input type="file" id="imageFile" accept="image/*">
+                        <input type="file" id="zplFile">
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6">
+                @*<img id="label1" alt="Label">*@
+                <div id="error" style="display:none"></div>
+                <div class="controls" style="display:none">
+                    <button type="button" class="btn btn-default" id="downloadZpl"><i class="fa fa-cloud-download"></i> ZPL</button>
+                    <button type="button" class="btn btn-default" id="downloadPng"><i class="fa fa-cloud-download"></i> PNG</button>
+                    <button type="button" class="btn btn-default" id="downloadPdf1"><i class="fa fa-cloud-download"></i> PDF</button>
+                    <button type="button" class="btn btn-default" id="downloadPdfAll"><i class="fa fa-cloud-download"></i> Multi-Label PDF</button>
+                </div>
+
+            </div>
+        </div>
+
+        @using (Html.BeginForm("PSC2510", "Print", FormMethod.Post))
+        {
+        <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+            <tr>
+                <td>
+                    <div class="details @(@Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                        {<strong>@PSCS.Resources.Common_cshtml.Success</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                        {<strong>@PSCS.Resources.Common_cshtml.Information</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                        {<strong>@PSCS.Resources.Common_cshtml.Warning</strong>}
+                        @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                        {<strong>@PSCS.Resources.Common_cshtml.Error</strong>}
+                        <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <table align="right">
+                        <tr>
+                            <th>
+                                <div class="controls">
+                                    <button type="button" class="btn btn-primary btn-large btnCustom5" id="downloadPdf"><i class="fa fa-cloud-download"></i> PDF</button>
+                                </div>
+                                @*<Button id="btnPrint" name="submitButton" value="Print" class="btn btn-primary btn-large btnCustom5">Print</Button>
+                            <Button class="btn btn-large btn-skyblue" id="btnExport" formaction="Export">Export</Button>*@
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>
+                                @if (ViewBag.BarcodeImage != null)
+                                {
+                                    <img src="@ViewBag.BarcodeImage" alt="" />
+                                }
+                            </th>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+            <tr>
+                <th height="20px"></th>
+            </tr>
+            <tr>
+                <th>
+                    <!-- Criteria area -->
+                    <table border="0" cellSpacing="0" cellPadding="0">
+                        <tr>
+                            <th>
+                                <table border="0" cellSpacing="0" cellPadding="0">
+                                    <tr>
+                                        <!-- Delivery date -->
+                                        <th width="130px">
+                                            <label class="textbox-caption">@PSCS.Resources.PSC2110_cshtml.Filter_DeliveryDate</label>
+                                        </th>
+                                        <th width="200px">
+                                            @Html.EditorFor(m => m.FilterDeliveryDate, new { htmlAttributes = new { @id = "deliveryDate", @class = "datepicker row", @readonly = "readonly", @style = "width:140px;" } })
+                                        </th>
+
+                                        <!-- Container No. -->
+                                        <th width="130px">
+                                            <label class="textbox-caption">@PSCS.Resources.PSC2110_cshtml.Filter_ContainerNo</label>
+                                        </th>
+                                        <th width="200px">
+                                            @Html.EditorFor(m => m.FilterContainerNo, new { htmlAttributes = new { @style = "width:170px;", @maxlength = "15" } })
+                                        </th>
+                                    </tr>
+                                </table>
+                            </th>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <table border="0" cellSpacing="0" cellPadding="0">
+                        <tr>
+                            <th width="80px">
+                                <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterHeatNo</label>
+                            </th>
+                            <th width="150px">
+                                @*@Html.Editor("HeatNo", new { htmlAttributes = new { @class = "textbox-100" } })*@
+                                @Html.EditorFor(m => m.FilterHeatNo, new { htmlAttributes = new { @style = "height:25px; width:130px;" } })
+                            </th>
+                            <th width="70px">
+                                <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterOD</label>
+                            </th>
+                            <th width="130px">
+                                @Html.EditorFor(m => m.FilterOD, new { htmlAttributes = new { @class = "textbox-100", @type = "number", @min = "0", @max = "10000", @step = "0.1" } })
+                            </th>
+                            <th width="70px">
+                                <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterWT</label>
+                            </th>
+                            <th width="120px">
+                                @Html.EditorFor(m => m.FilterWT, new { htmlAttributes = new { @class = "textbox-100", @type = "number", @min = "0", @max = "10000", @step = "0.1" } })
+                            </th>
+                            <th width="60px">
+                                <label class="textbox-caption">@PSCS.Resources.PSC2010_cshtml.FilterLength</label>
+                            </th>
+                            <th width="120px">
+                                @Html.EditorFor(m => m.FilterLength, new { htmlAttributes = new { @class = "textbox-100", @type = "number", @min = "0", @max = "100000", @step = "1" } })
+                            </th>
+
+                            <!-- Button -->
+                            <th width="140px">
+                                <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large">@PSCS.Resources.PSC2110_cshtml.Button_Filter</Button>
+                            </th>
+                        </tr>
+                    </table>
+                </th>
+            </tr>
+
+            <tr>
+                <th height="10px"></th>
+            </tr>
+
+            <!-- Body : Detail -->
+            <tr>
+                <th>
+                    @(Html
+                                        .Grid(Model.ReceiveItemsPlanList)
+                                        .Build(columns =>
+                                        {
+                                            columns.Add(model => "<input type=\"checkbox\" name=\"rowNo\" value=\"" + model.RowNo + "\" />")
+                                .Titled(Html.CheckBox("CheckAll")).Encoded(false).Css("action");
+                                            columns.Add(model => model.RowNo).Titled(@PSCS.Resources.PSC2510_cshtml.GridRowNo).Css("gridtext-center");
+                                            columns.Add(model => model.ReceiveId).AppendCss("hide");
+                                            columns.Add(model => model.DeliveryDate).Titled(@PSCS.Resources.PSC2510_cshtml.GridDeliveryDate).Formatted("{0:yyyy-MM-dd}").Css("gridtext-center");
+                                            columns.Add(model => model.ContainerNo).Titled(@PSCS.Resources.PSC2510_cshtml.GridContainerNo).Css("gridtext-center");
+                                            columns.Add(model => model.ItemCode).Titled(@PSCS.Resources.PSC2510_cshtml.GridItemCode).Css("gridtext-center");
+                                            columns.Add(model => model.HeatNo).Titled(@PSCS.Resources.PSC2510_cshtml.GridHeatNo).Css("gridtext-center");
+                                            columns.Add(model => model.OD).Titled(@PSCS.Resources.PSC2510_cshtml.GridOD).Css("gridtext-center");
+                                            columns.Add(model => model.WT).Titled(@PSCS.Resources.PSC2510_cshtml.GridWT).Css("gridtext-center");
+                                            columns.Add(model => model.Length).Titled(@PSCS.Resources.PSC2510_cshtml.GridLength).Css("gridtext-center");
+                                        })
+                                        .Css("table-hover")
+                                        .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+                                        .Sortable()
+                    )
+                </th>
+            </tr>
+        </table>
+        }
+
+        <script>
+
+            const ERROR_DOWN_FOR_MAINTENANCE = "ERROR: Temporarily down for maintenance";
+
+            function rotateLabel() {
+                setRotation(getRotation() + 90);
+            }
+
+            function refreshLabel() {
+                submitLabelRequest(false, false, function (xhr) {
+                    if (xhr.readyState == 4) {
+                        var totalCountHeader = xhr.getResponseHeader('X-Total-Count'); // received with all 200s and with some 404s
+                        if (xhr.status == 200) {
+                            var label = document.getElementById('label');
+                            var wurl = window.URL || window.webkitURL;
+                            wurl.revokeObjectURL(label.src);
+                            label.src = wurl.createObjectURL(xhr.response);
+                            labelDone(totalCountHeader);
+                        } else if (xhr.status >= 400 && xhr.status <= 599) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) {
+                                labelDone(totalCountHeader, reader.result);
+                            };
+                            reader.readAsText(xhr.response);
+                        } else if (xhr.status == 0) {
+                            // if the Labelary API server is down, the API gateway that sits in front of it will return a valid HTTP
+                            // error code, e.g. 404; however, the API gateway isn't configured for CORS, which means that the HTTP
+                            // error response comes back without the requisite "Access-Control-Allow-Origin" header, in which case
+                            // from the perspective of this code we see a response with readyState = 4 but status = 0...
+                            // http://broadcast.oreilly.com/2010/04/ajax-readystate-is-4-but-statu.html
+                            // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/status
+                            labelDone(0, ERROR_DOWN_FOR_MAINTENANCE);
+                        }
+                    }
+                });
+            }
+
+            function submitLabelRequest(pdf, all, orsc) {
+
+                var zpl = $('#zpl').val();
+                var uzpl = zpl.toUpperCase();
+                if (uzpl.indexOf('^XA') == -1 && uzpl.indexOf('\x02') == -1) {
+                    // no need to even hit the server to get the 404 error...
+                    labelDone('0', 'ERROR: The ZPL is missing a starting ^XA command.');
+                    return;
+                } else if (uzpl.indexOf('^XZ') == -1 && uzpl.indexOf('\x03') == -1) {
+                    // no need to even hit the server to get the 404 error...
+                    labelDone('0', 'ERROR: The ZPL is missing an ending ^XZ command.');
+                    return;
+                }
+
+                var density = $('#density').val();
+                //var width = $('#width').val() * $('#units').val();
+                //var height = $('#height').val() * $('#units').val();
+                var width = 3;
+                var height = 1.7;
+                var index = $('#index').val();
+                var baseUrl = 'http://api.labelary.com/v1/printers/' + density + 'dpmm/labels/' + width + 'x' + height + '/';
+                if (!pdf || !all) {
+                    baseUrl += index + '/';
+                }
+
+                // use a POST request so that the ZPL is never truncated, regardless of length
+                // http://www.html5rocks.com/en/tutorials/file/xhr2/
+                // http://www.henryalgus.com/reading-binary-files-using-jquery-ajax/
+                var formData = new FormData();
+                formData.append('file', zpl);
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () { orsc(this) };
+                xhr.open('POST', baseUrl);
+                xhr.setRequestHeader('Accept', pdf ? 'application/pdf' : 'image/png');
+                xhr.responseType = 'blob';
+                xhr.send(formData);
+            }
+
+            function refreshPermalink() {
+                var density = $('#density').val();
+                var width = $('#width').val();
+                var height = $('#height').val();
+                var units = $('#units option:selected').text();
+                var index = $('#index').val();
+                var zpl = encodeURIComponent($('#zpl').val());
+                $('#permalink').attr('href', '?density=' + density +
+                    '&width=' + width +
+                    '&height=' + height +
+                    '&units=' + units +
+                    '&index=' + index +
+                    '&zpl=' + zpl);
+            }
+
+            function loadZpl() {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#zpl').val(reader.result);
+                    refreshLabel();
+                    refreshPermalink();
+                };
+                var file = $('#zplFile')[0].files[0];
+                reader.readAsText(file);
+            }
+
+            function downloadPdf() {
+                downloadPdfPlease(false);
+            }
+
+            function downloadPdfPlease(all) {
+                submitLabelRequest(true, all, function (xhr) {
+                    if (xhr.readyState == 4) {
+                        if (xhr.status == 200) {
+                            var wurl = window.URL || window.webkitURL;
+                            var url = wurl.createObjectURL(xhr.response);
+                            var filename = all ? 'labels.pdf' : 'label.pdf';
+                            triggerDownload(url, filename);
+                            wurl.revokeObjectURL(url);
+                        } else if (xhr.status >= 400 && xhr.status <= 599) {
+                            var reader = new FileReader();
+                            reader.onload = function (e) {
+                                showDownloadError(reader.result);
+                            };
+                            reader.readAsText(xhr.response);
+                        } else if (xhr.status == 0) {
+                            // see note in refreshLabel() for details on when this might happen
+                            showDownloadError(ERROR_DOWN_FOR_MAINTENANCE);
+                        }
+                    }
+                });
+            }
+
+            function showDownloadError(errorMessage) {
+                if (errorMessage) {
+                    alert(errorMessage);
+                }
+            }
+
+            function triggerDownload(url, filename) {
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.style = 'display: none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            function track(event) {
+                ga('send', 'event', 'Viewer', event.data.action);
+            }
+
+            $('#downloadPdf').on('click', downloadPdf).on('click', { action: 'Download PDF' }, track);
+
+        </script>
+    </div>
+
+</body>
+</html>
+
+

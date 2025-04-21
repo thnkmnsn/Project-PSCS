@@ -1,0 +1,194 @@
+﻿@model PSCS.ModelsScreen.UserScreen
+
+@*@using PagedList.Mvc;
+    @using PagedList;*@
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    ViewBag.Title = PSCS.Resources.PSC8030_cshtml.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+
+        $('.mvc-grid tr').on('rowclick', function (e) {
+            link = '@Url.Action("PSC8030_Edit", "User")';  // url should be enclosed by single quotes.
+            window.location.href = link + "/id=" + $(e.target).children("td:nth-child(2)").text();
+        });
+
+        $('.mvc-grid th').click(function (e) {
+            e.stopPropagation();
+        });
+
+        $("#btnAdd").click(function () {
+            var link = '@Url.Action("PSC8030_Edit", "User")';
+            window.location.href = '@Url.Action("PSC8030_Edit", "User")';
+        });
+
+         $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC0100", "Menu")';
+        });
+        $(document).ready(function () {
+            var row = @Model.Total
+            console.log(row);
+            if (row > 0) {
+                $('#btnAdd').removeAttr('disabled', 'disabled');
+            } else {
+                $('#btnAdd').attr('disabled', 'disabled');
+            }
+        });
+    </script>
+}
+<h1 class="H1">@PSCS.Resources.PSC8030_cshtml.Title</h1>
+
+
+@using (Html.BeginForm("PSC8030", "User", FormMethod.Post))
+{
+    <table border="0" cellSpacing="0" cellPadding="0" width="100%">
+        <tr>
+            <td>
+                <div class="details @(@Model.AlertsType == PSCS.Common.Constants.AlertsType.None ? "hide" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Success ? "show alert alert-success" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation ? "show alert alert-info" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning ? "show alert alert-warning" : @Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger ? "show alert alert-danger" : "hide")" )>
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Success)
+                    {<strong>@PSCS.Resources.Common_cshtml.Success</strong>}
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Infomation)
+                    {<strong>@PSCS.Resources.Common_cshtml.Information</strong>}
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Warning)
+                    {<strong>@PSCS.Resources.Common_cshtml.Warning</strong>}
+                    @if (Model.AlertsType == PSCS.Common.Constants.AlertsType.Danger)
+                    {<strong>@PSCS.Resources.Common_cshtml.Error</strong>}
+                    <label calss="field-validation-error">@Html.DisplayFor(model => model.Message)</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <input type="button" id="btnAdd" value=@PSCS.Resources.PSC8030_cshtml.Button_Add class="btn btn-large btn-skyblue" />
+                            <Button id="btnClearFilter" name="submitButton" value="ClearFilter" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_ClearFilter</Button>
+                            <Button id="btnBack" name="submitButton" value="Back" class="btn btn-large btn-secondary">@PSCS.Resources.Common_cshtml.Button_Back</Button>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="5px"></th>
+        </tr>
+        <tr>
+            <th>
+                <table align="right">
+                    <tr>
+                        <th>
+                            <p>@PSCS.Resources.Common_cshtml.Total: @Html.DisplayFor(model => model.Total)  @PSCS.Resources.Common_cshtml.Item</p>
+                        </th>
+                    </tr>
+                </table>
+            </th>
+        </tr>
+
+        <tr>
+            <th>
+                <table border="0" cellSpacing="0" cellPadding="0">
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8030_cshtml.Filter_UserID</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterUserID, new { @style = "height:25px; width:120px;" })
+                                    </th>
+                                    <th width="80px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8030_cshtml.Filter_UserName</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.EditorFor(m => m.FilterUserName, new { @style = "height:25px; width:120px;" })
+                                    </th>
+                                    <th width="80px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8030_cshtml.Filter_Language</label>
+                                    </th>
+                                    <th width="140px">
+                                        @Html.DropDownListFor(m => m.FilterLanguage, Model.LanguageList, PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;" })
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th height="5px"></th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <table border="0" cellSpacing="0" cellPadding="0">
+                                <tr>
+                                    <th width="70px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8030_cshtml.Filter_Role</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.DropDownListFor(m => m.FilterRole, Model.RoleList, PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:170px;" })
+                                    </th>
+                                    <th width="80px">
+                                        <label class="textbox-caption">@PSCS.Resources.PSC8030_cshtml.Filter_Active</label>
+                                    </th>
+                                    <th width="200px">
+                                        @Html.DropDownListFor(m => m.FilterActive, Model.ActiveList, PSCS.Resources.Common_cshtml.All, new { @style = "height:25px; width:120px;" })
+                                    </th>
+                                    <th width="140px">
+                                        <Button id="btnFilter" name="submitButton" value="Filter" class="btn btn-primary btn-large">@PSCS.Resources.PSC8030_cshtml.Button_Filter</Button>
+                                    </th>
+                                </tr>
+                            </table>
+                        </th>
+                    </tr>
+
+                </table>
+            </th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th height="10px"></th>
+        </tr>
+        <tr>
+            <th>
+                @(Html
+                                                            .Grid(Model.UserList)
+                                                            .Build(columns =>
+                                                            {
+                                                                columns.Add(model => model.RowNo).Titled(@PSCS.Resources.PSC8030_cshtml.Gride_RowNo).Css("gridtext-center");
+                                                                columns.Add(model => model.UserId).Titled(@PSCS.Resources.PSC8030_cshtml.Gride_UserID).Css("gridtext-center");
+                                                                columns.Add(model => model.UserName).Titled(@PSCS.Resources.PSC8030_cshtml.Gride_UserName).Css("gridtext-center");
+                                                                columns.Add(model => model.Language).Css("hidden");
+                                                                ; columns.Add(model => model.LanguageName).Titled(@PSCS.Resources.PSC8030_cshtml.Gride_Language).Css("gridtext-center");
+                                                                columns.Add(model => model.RoleId).Css("hidden");
+                                                                columns.Add(model => model.RoleName).Titled(@PSCS.Resources.PSC8030_cshtml.Gride_Role).Css("gridtext-center");
+                                                                columns.Add(model => model.Active).Css("hidden");
+                                                                columns.Add(model => model.ActiveName).Titled(@PSCS.Resources.PSC8030_cshtml.Gride_Active).Css("gridtext-center");
+                                                                columns.Add(model => model.Password).Css("hidden");
+                                                            })
+                                                            .Css("table-hover")
+                                                            .Empty(PSCS.Resources.Common_cshtml.NoDataFound)
+                                                            .Sortable()
+                )
+            </th>
+        </tr>
+    </table>
+
+    @*@Html.PagedListPager((IPagedList)ViewBag.PageList,
+            page => Url.Action("paging", new
+            {
+                page = page,
+                UserID = ViewBag.UserID,
+                UserName = ViewBag.UserName,
+                Language = ViewBag.Language,
+                Role = ViewBag.Role,
+                Active = ViewBag.Active
+            }))*@
+}

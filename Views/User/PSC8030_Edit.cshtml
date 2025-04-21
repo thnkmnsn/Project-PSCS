@@ -1,0 +1,198 @@
+﻿@model PSCS.ModelsScreen.UserScreenEdit
+
+<link href="~/Content/Site.css" rel="stylesheet" />
+<link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+
+@{
+    if (Model.EditMode.Equals("Add"))
+    {
+        ViewBag.Title = PSCS.Resources.PSC8030_Edit_cshtml.Title_Add;
+    }
+    else
+    {
+        ViewBag.Title = PSCS.Resources.PSC8030_Edit_cshtml.Title_Edit;
+    }
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts{
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script language="javascript" type="text/javascript">
+        $('#btnSave').on('click', function () {
+            $('#btnConfirm').show();
+            $('#btnDeleteM').hide();
+            var roleId = $('#ddlRole').val();
+            var editPassword = $('#EditPassword').val();
+
+            if (roleId == '6' || editPassword != '') {
+                $("#itemModal").modal("show");
+                $('#Allow').prop('checked', true);
+                return false;
+            }
+            else if (editPassword == '') {
+                $("#itemModal").modal("show");
+                $('#Allow').prop('checked', false);
+                return false;
+            }
+        });
+
+        $('#btnConfirm').on('click', function () {
+            var save = $("#btnSave").val();
+            $("#btnConfirm").val(save);
+            $(this).submit();
+        });
+
+        $(document).on("click", "#btnExport", function (e) {
+            var roleId = $('#ddlRole').val();
+            var editPassword = $('#EditPassword').val();
+
+            if (roleId == '6' || editPassword != '') {
+                $('#Allow').prop('checked', true);
+            }
+            else if (editPassword == '') {
+                $('#Allow').prop('checked', false);
+            }
+
+        });
+
+
+        $(document).on("click", "#btnDelete", function (e) {
+            $('#btnConfirm').hide();
+            $('#btnDeleteM').show();
+            $("#itemModal").modal("show");
+            return false;
+        });
+
+        $('#btnDeleteM').on('click', function () {
+            $('#Allow').prop('checked', true);
+            $(this).submit();
+        });
+
+        $('#btnBack').click(function () {
+            window.location.href = '@Url.Action("PSC8030", "User")';
+        });
+    </script>
+}
+
+
+<style>
+    .edit-mode {
+        width: 90px;
+        display: none;
+    }
+</style>
+
+
+@using (Html.BeginForm("PSC8030_Edit", "User", FormMethod.Post))
+{
+    <div class="panel-heading">
+        @if (Model.EditMode.Equals("Add"))
+        {
+            <h1 id="itemModalLabel">@PSCS.Resources.PSC8030_Edit_cshtml.Title_Add</h1>
+        }
+        else
+        {
+            <h1 id="itemModalLabel">@PSCS.Resources.PSC8030_Edit_cshtml.Title_Edit</h1>
+        }
+    </div>
+    <div>
+        @Html.HiddenFor(model => model.EditMode, new { @id = "EditMode" })
+        <div class="panel-title form-group row text-right">
+            @if (Model.EditMode.Equals("Edit"))
+            {
+                <Button id="btnDelete" name="submitButton" value="Delete" class="btn btn-large btn-red" style="float:left;">@PSCS.Resources.PSC8030_Edit_cshtml.Button_Delete</Button>
+            }
+            <Button id="btnSave" name="submitButton" value="Save" class="btn btn-large btn-green">@PSCS.Resources.PSC8030_Edit_cshtml.Button_Save</Button>
+            <button id="btnExport" name="submitButton" value="Export" class="btn btn-skyblue">@PSCS.Resources.PSC8030_Edit_cshtml.Button_Export</button>
+            <button id="btnBack" type="button" value="Back" class="btn btn-secondary">@PSCS.Resources.PSC8030_Edit_cshtml.Button_Back</button>
+        </div>
+    </div>
+    <div class="panel-body">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8030_Edit_cshtml.UserID</label>
+            <div class="col-sm-10">
+                @Html.TextBoxFor(model => model.EditUserID, "", Model.EditMode.Equals("Edit")
+                                            ? (object)new { @readonly = "readonly", @class = "form-control", @placeholder = @PSCS.Resources.PSC8030_Edit_cshtml.UserID, @maxlength = "8" }
+                                            : (object)new { @class = "form-control", @placeholder = @PSCS.Resources.PSC8030_Edit_cshtml.UserID, @maxlength = "8" })
+                @Html.ValidationMessageFor(model => model.EditUserID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8030_Edit_cshtml.UserName</label>
+            <div class="col-sm-10">
+                @Html.TextBoxFor(model => model.EditUserName, "", new { @class = "form-control", @placeholder = @PSCS.Resources.PSC8030_Edit_cshtml.UserName, @maxlength = "200" })
+                @Html.ValidationMessageFor(model => model.EditUserName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8030_Edit_cshtml.Password</label>
+            <div class="col-sm-10">
+                @Html.TextBoxFor(model => model.EditPassword, "", new { @class = "form-control", @placeholder = @PSCS.Resources.PSC8030_Edit_cshtml.Password, @type = "password", @maxlength = "16" })
+                @Html.CheckBoxFor(model => model.EditPasswordAllow, new { id = "Allow", Style = "display:none;" })
+                @Html.ValidationMessageFor(model => model.EditPasswordAllow, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8030_Edit_cshtml.Language</label>
+            <div class="col-sm-10">
+                @Html.DropDownListFor(model => model.EditLanguageSelected, Model.LanguageList, new { @class = "form-control" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8030_Edit_cshtml.Role</label>
+            <div class="col-sm-10">
+                @Html.DropDownListFor(model => model.EditRoleIdSelected, Model.RoleList, new { id = "ddlRole", @class = "form-control" })
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">@PSCS.Resources.PSC8030_Edit_cshtml.Active</label>
+            <div class="col-sm-10">
+                @Html.DropDownListFor(model => model.EditActiveSelected, Model.ActiveList, new { @class = "form-control" })
+            </div>
+        </div>
+
+    </div>
+    //add ConfirmDialog
+    <div id="itemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 480px;">
+            <div class="modal-content">
+                <!-- Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="itemModalLabel">
+                        @PSCS.Resources.Common_cshtml.Wait
+                    </h5>
+                </div>
+
+                <!-- Body -->
+                <div id="itemModalBody" class="modal-body">
+                    <div class="form-group row" style="padding-left:30px;">
+                        <table>
+                            <tr>
+                                <td>
+                                    @PSCS.Resources.Common_cshtml.WaitMsg
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Footer Button-->
+                <div class="modal-footer">
+                    <button type="button" id="btnCancel" class="btn btn-large btn-secondary" data-dismiss="modal">@PSCS.Resources.Common_cshtml.Cancel</button>
+                    <Button id="btnConfirm" name="submitButton" value="Save" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                    <Button id="btnDeleteM" name="submitButton" value="Delete" class="btn btn-large btn-primary">@PSCS.Resources.Common_cshtml.Confirm</Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
